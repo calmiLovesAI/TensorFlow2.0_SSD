@@ -15,14 +15,6 @@ class Anchors():
         box_h = self.h * size / np.sqrt(ratio)
         return box_w, box_h
 
-    def __get_all_pixel_coordinate(self):
-        x = np.arange(self.w)
-        y = np.arange(self.h)
-        x_m, y_m = np.meshgrid(x, y)
-        x_m = x_m.flatten()
-        y_m = y_m.flatten()
-        return zip(x_m, y_m)
-
     def __box_coordinate_normalization(self, x, y, box_info):
         box_info_array = np.array(box_info)
         box_w = box_info_array[:, 0]
@@ -37,7 +29,13 @@ class Anchors():
         x_max /= self.h
         y_min /= self.w
         y_max /= self.h
-        return x_min, y_min, x_max, y_max
+
+        num_of_boxes = len(box_info)
+        coord_list = []
+        for i in range(num_of_boxes):
+            coord_list.append([x_min[i], y_min[i], x_max[i], y_max[i]])
+
+        return np.array(coord_list)
 
 
     def __generate_anchors(self):
@@ -60,11 +58,22 @@ class Anchors():
         return box_info
 
     def get_all_default_boxes(self):
-        pixel_coord = self.__get_all_pixel_coordinate()
         box_info = self.__generate_anchors()
-        for item in pixel_coord:
-            x_min, y_min, x_max, y_max = self.__box_coordinate_normalization(x=item[0],
-                                                                             y=item[1],
-                                                                             box_info=box_info)
+        # initialize stack_ndarray
+        stack_ndarray = self.__box_coordinate_normalization(x=0, y=0, box_info=box_info)
+        for x in range(self.w):
+            for y in range(self.h):
+                if x == 0 and y == 0:
+                    stack_ndarray = stack_ndarray
+                else:
+                    # the shape of coordinates of each pixel on the feature map:[5, 4]
+                    pixel_coord = self.__box_coordinate_normalization(x=x,
+                                                                      y=y,
+                                                                      box_info=box_info)
+                    stack_ndarray = np.dstack((stack_ndarray, pixel_coord))
+
+        boxes = np.reshape(stack_ndarray, (-1, 4, self.w, self.h))
+
+        return tf.convert_to_tensor(boxes, dtype=tf.float32)
 
 
