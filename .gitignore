@@ -1,2 +1,5 @@
-.idea
+/.idea
 __pycache__
+/dataset/*
+!/dataset/README.md
+/test
