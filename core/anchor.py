@@ -2,9 +2,9 @@ import tensorflow as tf
 import numpy as np
 
 class Anchors():
-    def __init__(self, feature_map_w, feature_map_h, sizes, ratios):
-        self.w = feature_map_w
-        self.h = feature_map_h
+    def __init__(self, feature_map, sizes, ratios):
+        self.w = feature_map.shape[2]
+        self.h = feature_map.shape[1]
         self.sizes = sizes
         self.ratios = ratios
         self.num_size = len(self.sizes)
@@ -35,7 +35,7 @@ class Anchors():
         for i in range(num_of_boxes):
             coord_list.append([x_min[i], y_min[i], x_max[i], y_max[i]])
 
-        return np.array(coord_list)
+        return tf.convert_to_tensor(coord_list)
 
 
     def __generate_anchors(self):
@@ -60,20 +60,22 @@ class Anchors():
     def get_all_default_boxes(self):
         box_info = self.__generate_anchors()
         # initialize stack_ndarray
-        stack_ndarray = self.__box_coordinate_normalization(x=0, y=0, box_info=box_info)
+        stack_tensor = self.__box_coordinate_normalization(x=0, y=0, box_info=box_info)
         for x in range(self.w):
             for y in range(self.h):
                 if x == 0 and y == 0:
-                    stack_ndarray = stack_ndarray
+                    stack_tensor = stack_tensor
                 else:
                     # the shape of coordinates of each pixel on the feature map:[5, 4]
                     pixel_coord = self.__box_coordinate_normalization(x=x,
                                                                       y=y,
                                                                       box_info=box_info)
-                    stack_ndarray = np.dstack((stack_ndarray, pixel_coord))
+                    # stack_tensor = tf.stack((stack_tensor, pixel_coord), axis=2)
+                    stack_tensor = tf.convert_to_tensor(np.dstack((stack_tensor.numpy(), pixel_coord.numpy())))
 
-        boxes = np.reshape(stack_ndarray, (-1, 4, self.w, self.h))
+        boxes = tf.reshape(stack_tensor, (-1, 4, self.w, self.h))
+        boxes = tf.transpose(boxes, perm=[2, 3, 0, 1])
 
-        return tf.convert_to_tensor(boxes, dtype=tf.float32)
+        return boxes
 
 
