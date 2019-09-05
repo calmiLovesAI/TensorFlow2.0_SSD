@@ -71,7 +71,8 @@ class Anchors():
                                                                       y=y,
                                                                       box_info=box_info)
                     # stack_tensor = tf.stack((stack_tensor, pixel_coord), axis=2)
-                    stack_tensor = tf.convert_to_tensor(np.dstack((stack_tensor.numpy(), pixel_coord.numpy())))
+                    print(type(stack_tensor))
+                    stack_tensor = tf.convert_to_tensor(np.dstack((stack_tensor, pixel_coord)))
 
         boxes = tf.reshape(stack_tensor, (-1, 4, self.w, self.h))
         boxes = tf.transpose(boxes, perm=[2, 3, 0, 1])
