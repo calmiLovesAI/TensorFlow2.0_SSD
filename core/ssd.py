@@ -40,49 +40,35 @@ class SSD(tf.keras.Model):
 
     def call(self, inputs, training=None, mask=None):
         anchors_list, class_preds_list, box_preds_list = [], [], []
-        # stage 1
         x = self.backbone(inputs)
         anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[0], ratios=self.ratios[0]))
         class_preds_list.append(self.__get_class_preds(feature_map=x))
         box_preds_list.append(self.__get_box_preds(feature_map=x))
 
-        print("Predict scale : ", 0, x.shape, "with", anchors_list[-1].shape[1], "anchors")
-
-        # stage 2
         x = self.down_sample_1(x)
         anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[1], ratios=self.ratios[1]))
         class_preds_list.append(self.__get_class_preds(feature_map=x))
         box_preds_list.append(self.__get_box_preds(feature_map=x))
 
-        print("Predict scale : ", 1, x.shape, "with", anchors_list[-1].shape[1], "anchors")
-
-        # stage 3
         x = self.down_sample_2(x)
         anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[2], ratios=self.ratios[2]))
         class_preds_list.append(self.__get_class_preds(feature_map=x))
         box_preds_list.append(self.__get_box_preds(feature_map=x))
 
-        print("Predict scale : ", 2, x.shape, "with", anchors_list[-1].shape[1], "anchors")
-
-        # stage 4
         x = self.down_sample_3(x)
         anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[3], ratios=self.ratios[3]))
         class_preds_list.append(self.__get_class_preds(feature_map=x))
         box_preds_list.append(self.__get_box_preds(feature_map=x))
 
-        print("Predict scale : ", 3, x.shape, "with", anchors_list[-1].shape[1], "anchors")
-
-        # stage 5
         x = self.maxpool(x)
         anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[4], ratios=self.ratios[4]))
         class_preds_list.append(self.__get_class_preds(feature_map=x))
         box_preds_list.append(self.__get_box_preds(feature_map=x))
-
-        print("Predict scale : ", 4, x.shape, "with", anchors_list[-1].shape[1], "anchors")
 
         anchors = concat_predictions(anchors_list)
         class_preds = concat_predictions(class_preds_list)
         box_preds = concat_predictions(box_preds_list)
 
         class_preds= tf.reshape(class_preds, shape=(self.batch_size, -1, self.num_classes+1))
+
         return anchors, class_preds, box_preds

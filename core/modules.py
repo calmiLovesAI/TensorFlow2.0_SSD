@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 class down_sample_layer(tf.keras.layers.Layer):
     def __init__(self, num_filter):
         super(down_sample_layer, self).__init__()
@@ -33,7 +34,7 @@ class ClassPredictor(tf.keras.layers.Layer):
     def call(self, inputs, **kwargs):
         x = self.conv(inputs)
         x = self.flatten(x)
-        # print(x.shape)
+
         return x
 
 
@@ -51,20 +52,6 @@ class BoxPredictor(tf.keras.layers.Layer):
         x = self.flatten(x)
 
         return x
-
-
-# def class_predictor(num_anchors, num_classes):
-#     return tf.keras.layers.Conv2D(filters=num_anchors * (num_classes + 1),
-#                                   kernel_size=(3, 3),
-#                                   strides=(1, 1),
-#                                   padding="same")
-#
-#
-# def box_predictor(num_anchors):
-#     return tf.keras.layers.Conv2D(filters=num_anchors * 4,
-#                                   kernel_size=(3, 3),
-#                                   strides=(1, 1),
-#                                   padding="same")
 
 
 def down_sample(num_filters):
