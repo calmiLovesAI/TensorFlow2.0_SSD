@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-
 class down_sample_layer(tf.keras.layers.Layer):
     def __init__(self, num_filter):
         super(down_sample_layer, self).__init__()
@@ -34,7 +33,7 @@ class ClassPredictor(tf.keras.layers.Layer):
     def call(self, inputs, **kwargs):
         x = self.conv(inputs)
         x = self.flatten(x)
-
+        # print(x.shape)
         return x
 
 

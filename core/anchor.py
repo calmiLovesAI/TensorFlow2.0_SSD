@@ -1,4 +1,3 @@
-import tensorflow as tf
 import numpy as np
 
 class Anchors():
@@ -61,24 +60,19 @@ class Anchors():
     def get_all_default_boxes(self):
         box_info = self.__generate_anchors()
         # initialize stack_ndarray
-        stack_tensor = self.__box_coordinate_normalization(x=0, y=0, box_info=box_info)
+        stack_array = self.__box_coordinate_normalization(x=0, y=0, box_info=box_info)
         for x in range(self.w):
             for y in range(self.h):
                 if x == 0 and y == 0:
-                    stack_tensor = stack_tensor
+                    stack_array = stack_array
                 else:
                     # the shape of coordinates of each pixel on the feature map:[5, 4]
                     pixel_coord = self.__box_coordinate_normalization(x=x,
                                                                       y=y,
                                                                       box_info=box_info)
-                    # stack_tensor = tf.stack((stack_tensor, pixel_coord), axis=2)
-                    # print(type(stack_tensor))
-                    # stack_tensor = tf.convert_to_tensor(np.dstack((stack_tensor, pixel_coord)))
-                    stack_tensor = np.dstack((stack_tensor, pixel_coord))
+                    stack_array = np.dstack((stack_array, pixel_coord))
 
-        # boxes = tf.reshape(stack_tensor, (-1, 4, self.w, self.h))
-        # boxes = tf.transpose(boxes, perm=[2, 3, 0, 1])
-        boxes = np.reshape(stack_tensor, (-1, 4, self.w, self.h))
+        boxes = np.reshape(stack_array, (-1, 4, self.w, self.h))
         boxes = np.transpose(boxes, axes=[2, 3, 0, 1])
 
         return boxes

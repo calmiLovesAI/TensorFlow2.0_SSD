@@ -2,13 +2,13 @@ import tensorflow as tf
 from core.modules import concat_predictions, backbone, down_sample_layer, ClassPredictor, BoxPredictor
 from core import anchor
 
-
 class SSD(tf.keras.Model):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, batch_size):
         super(SSD, self).__init__()
         self.sizes = [[0.2, 0.272], [0.37, 0.447], [0.54, 0.619], [0.71, 0.79], [0.88, 0.961]]
         self.ratios = [[1, 2, 0.5]] * 5
         self.num_classes = num_classes
+        self.batch_size = batch_size
         self.num_anchors = len(self.sizes[0]) + len(self.ratios[0]) - 1
 
         self.backbone = backbone()
@@ -17,11 +17,12 @@ class SSD(tf.keras.Model):
         self.down_sample_2 = down_sample_layer(num_filter=128)
         self.down_sample_3 = down_sample_layer(num_filter=128)
 
-        self.globalmaxpool = tf.keras.layers.GlobalMaxPooling2D()
+        self.maxpool = tf.keras.layers.MaxPool2D(pool_size=(4, 4))
 
     def __get_anchors(self, feature_map, sizes, ratios):
         anchor_instantiation = anchor.Anchors(feature_map=feature_map, sizes=sizes, ratios=ratios)
         anchors = anchor_instantiation.get_all_default_boxes()
+        anchors = anchors.reshape((1, -1, 4))
 
         return anchors
 
@@ -72,7 +73,7 @@ class SSD(tf.keras.Model):
         print("Predict scale : ", 3, x.shape, "with", anchors_list[-1].shape[1], "anchors")
 
         # stage 5
-        x = self.globalmaxpool(x)
+        x = self.maxpool(x)
         anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[4], ratios=self.ratios[4]))
         class_preds_list.append(self.__get_class_preds(feature_map=x))
         box_preds_list.append(self.__get_box_preds(feature_map=x))
@@ -83,5 +84,5 @@ class SSD(tf.keras.Model):
         class_preds = concat_predictions(class_preds_list)
         box_preds = concat_predictions(box_preds_list)
 
-        class_preds= class_preds.reshape(shape=(0, -1, self.num_classes+1))
+        class_preds= tf.reshape(class_preds, shape=(self.batch_size, -1, self.num_classes+1))
         return anchors, class_preds, box_preds
