@@ -35,7 +35,8 @@ class Anchors():
         for i in range(num_of_boxes):
             coord_list.append([x_min[i], y_min[i], x_max[i], y_max[i]])
 
-        return tf.convert_to_tensor(coord_list)
+        # return tf.convert_to_tensor(coord_list, dtype=tf.float32)
+        return np.array(coord_list)
 
 
     def __generate_anchors(self):
@@ -71,11 +72,14 @@ class Anchors():
                                                                       y=y,
                                                                       box_info=box_info)
                     # stack_tensor = tf.stack((stack_tensor, pixel_coord), axis=2)
-                    print(type(stack_tensor))
-                    stack_tensor = tf.convert_to_tensor(np.dstack((stack_tensor, pixel_coord)))
+                    # print(type(stack_tensor))
+                    # stack_tensor = tf.convert_to_tensor(np.dstack((stack_tensor, pixel_coord)))
+                    stack_tensor = np.dstack((stack_tensor, pixel_coord))
 
-        boxes = tf.reshape(stack_tensor, (-1, 4, self.w, self.h))
-        boxes = tf.transpose(boxes, perm=[2, 3, 0, 1])
+        # boxes = tf.reshape(stack_tensor, (-1, 4, self.w, self.h))
+        # boxes = tf.transpose(boxes, perm=[2, 3, 0, 1])
+        boxes = np.reshape(stack_tensor, (-1, 4, self.w, self.h))
+        boxes = np.transpose(boxes, axes=[2, 3, 0, 1])
 
         return boxes
 

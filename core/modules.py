@@ -22,18 +22,50 @@ class down_sample_layer(tf.keras.layers.Layer):
         return x
 
 
-def class_predictor(num_anchors, num_classes):
-    return tf.keras.layers.Conv2D(filters=num_anchors * (num_classes + 1),
-                                  kernel_size=(3, 3),
-                                  strides=(1, 1),
-                                  padding="same")
+class ClassPredictor(tf.keras.layers.Layer):
+    def __init__(self, num_anchors, num_classes):
+        super(ClassPredictor, self).__init__()
+        self.conv = tf.keras.layers.Conv2D(filters=num_anchors * (num_classes + 1),
+                                           kernel_size=(3, 3),
+                                           strides=(1, 1),
+                                           padding="same")
+        self.flatten = tf.keras.layers.Flatten()
+
+    def call(self, inputs, **kwargs):
+        x = self.conv(inputs)
+        x = self.flatten(x)
+
+        return x
 
 
-def box_predictor(num_anchors):
-    return tf.keras.layers.Conv2D(filters=num_anchors * 4,
-                                  kernel_size=(3, 3),
-                                  strides=(1, 1),
-                                  padding="same")
+class BoxPredictor(tf.keras.layers.Layer):
+    def __init__(self, num_anchors):
+        super(BoxPredictor, self).__init__()
+        self.conv = tf.keras.layers.Conv2D(filters=num_anchors * 4,
+                                           kernel_size=(3, 3),
+                                           strides=(1, 1),
+                                           padding="same")
+        self.flatten = tf.keras.layers.Flatten()
+
+    def call(self, inputs, **kwargs):
+        x = self.conv(inputs)
+        x = self.flatten(x)
+
+        return x
+
+
+# def class_predictor(num_anchors, num_classes):
+#     return tf.keras.layers.Conv2D(filters=num_anchors * (num_classes + 1),
+#                                   kernel_size=(3, 3),
+#                                   strides=(1, 1),
+#                                   padding="same")
+#
+#
+# def box_predictor(num_anchors):
+#     return tf.keras.layers.Conv2D(filters=num_anchors * 4,
+#                                   kernel_size=(3, 3),
+#                                   strides=(1, 1),
+#                                   padding="same")
 
 
 def down_sample(num_filters):
