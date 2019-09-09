@@ -17,7 +17,8 @@ class SSD(tf.keras.Model):
         self.down_sample_2 = down_sample_layer(num_filter=128)
         self.down_sample_3 = down_sample_layer(num_filter=128)
 
-        self.maxpool = tf.keras.layers.MaxPool2D(pool_size=(4, 4))
+        # self.maxpool = tf.keras.layers.MaxPool2D(pool_size=(4, 4))
+        self.maxpool = tf.keras.layers.GlobalMaxPooling2D()
 
     def __get_anchors(self, feature_map, sizes, ratios):
         anchor_instantiation = anchor.Anchors(feature_map=feature_map, sizes=sizes, ratios=ratios)
@@ -61,6 +62,7 @@ class SSD(tf.keras.Model):
         box_preds_list.append(self.__get_box_preds(feature_map=x))
 
         x = self.maxpool(x)
+        x = tf.reshape(x, shape=[-1, 1, 1, x.shape[1]])
         anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[4], ratios=self.ratios[4]))
         class_preds_list.append(self.__get_class_preds(feature_map=x))
         box_preds_list.append(self.__get_box_preds(feature_map=x))
