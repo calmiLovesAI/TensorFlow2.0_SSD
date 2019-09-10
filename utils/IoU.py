@@ -1,9 +1,8 @@
+import numpy as np
 
 class IoU():
-    def __init__(self, coord_pred, coord_true):
+    def __init__(self):
         super(IoU, self).__init__()
-        self.coord_pred = coord_pred
-        self.coord_true = coord_true
 
     def __is_the_point_on_the_line_segment(self, point, segment):
         if max(segment) > point > min(segment):
@@ -38,11 +37,11 @@ class IoU():
         area = abs(x1 - x2) * abs(y1 - y2)
         return area
 
-    def calculate_iou(self):
+    def __calculate_iou_for_one_dim(self, coord_pred, coord_true):
         # coord_pred : predicted anchors coordinates, [xmin, ymin, xmax, ymax]
         # coord_true : true anchors coordinates, [xmin, ymin, xmax, ymax]
-        x_intersection = self.__intersection_of_two_segments(self.coord_pred[0], self.coord_pred[2], self.coord_true[0], self.coord_true[2])
-        y_intersection = self.__intersection_of_two_segments(self.coord_pred[1], self.coord_pred[3], self.coord_true[1], self.coord_true[3])
+        x_intersection = self.__intersection_of_two_segments(coord_pred[0], coord_pred[2], coord_true[0], coord_true[2])
+        y_intersection = self.__intersection_of_two_segments(coord_pred[1], coord_pred[3], coord_true[1], coord_true[3])
 
         if x_intersection and y_intersection:
             i_area = self.__rectangle_area(x1=x_intersection[0],
@@ -52,12 +51,24 @@ class IoU():
         else:
             i_area = 0
 
-        u_area = self.__rectangle_area(x1=self.coord_pred[0], x2=self.coord_pred[2],
-                                       y1=self.coord_pred[1], y2=self.coord_pred[3]) + \
-                 self.__rectangle_area(x1=self.coord_true[0], x2=self.coord_true[2],
-                                       y1=self.coord_true[1], y2=self.coord_true[3]) - \
+        u_area = self.__rectangle_area(x1=coord_pred[0], x2=coord_pred[2],
+                                       y1=coord_pred[1], y2=coord_pred[3]) + \
+                 self.__rectangle_area(x1=coord_true[0], x2=coord_true[2],
+                                       y1=coord_true[1], y2=coord_true[3]) - \
             i_area
 
         iou_area = i_area / u_area
 
         return iou_area
+
+    def calculate_iou(self, n_dims_coord_pred, n_dims_coord_true):
+        assert n_dims_coord_pred.shape[0] == n_dims_coord_true.shape[0], \
+            "The dimension of two multidimensional arrays must be the same."
+        assert n_dims_coord_pred.shape[1] == n_dims_coord_true.shape[1] == 4, \
+            "The dimension of two multidimensional arrays must be the same."
+        num_of_boxes = n_dims_coord_pred.shape[0]
+        list_temp = []
+        for i in range(num_of_boxes):
+            list_temp.append(self.__calculate_iou_for_one_dim(coord_pred=n_dims_coord_pred[i, :],
+                                                              coord_true=n_dims_coord_true[i, :]))
+        return np.array(list_temp).reshape((-1, 1))
