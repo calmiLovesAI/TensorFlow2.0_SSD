@@ -47,4 +47,20 @@ class LabelAnchors():
 
         return max_value_list
 
+    def __get_offset(self, pred_array, true_array):
+        offset_list = []
+        for index in range(4):
+            offset_list.append(true_array[index] - pred_array[index])
+
+        offset_array = np.array(offset_list)
+
+        return offset_array
+
+    def get_results(self):
+        # max_values : [[i1, j1], [i2, j2], ..., [in, jn]]
+        max_values = self.__get_the_max_value_of_iou_array(iou_array=self.__generate_iou_array())
+
+        for item in max_values:
+            # for each picture entered
+
 
