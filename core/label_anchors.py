@@ -20,7 +20,7 @@ class LabelAnchors():
         self.num_true_boxes = labels.shape[1]
 
 
-    def generate_iou_array(self):
+    def __generate_iou_array(self):
         iou_list = []
         for i in range(self.num_anchors):
             temp_list = []
@@ -31,5 +31,11 @@ class LabelAnchors():
             iou_list.append(temp_list)
 
         return np.array(iou_list)
+
+    def __get_the_max_value_of_matix(self, matrix):
+        max_index = np.argmax(matrix)
+        i = max_index % matrix.shape[0]
+        j = max_index % matrix.shape[1]
+        return i, j
 
 
