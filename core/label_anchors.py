@@ -30,12 +30,21 @@ class LabelAnchors():
                 temp_list.append(iou_ij)
             iou_list.append(temp_list)
 
-        return np.array(iou_list)
+        return np.array(iou_list)  # shape: [self.num_anchors, self.num_true_boxes, batch_size, 1]
 
     def __get_the_max_value_of_matix(self, matrix):
         max_index = np.argmax(matrix)
         i = max_index % matrix.shape[0]
         j = max_index % matrix.shape[1]
-        return i, j
+        return [i, j]
+
+    def __get_the_max_value_of_iou_array(self, iou_array):
+        # iou_array = iou_array.reshape((self.num_anchors, self.num_true_boxes, -1))
+        max_value_list = []
+        for index in range(iou_array.shape[2]):
+            max_list = self.__get_the_max_value_of_matix(iou_array[:, :, index, 1])
+            max_value_list.append(max_list)
+
+        return max_value_list
 
 
