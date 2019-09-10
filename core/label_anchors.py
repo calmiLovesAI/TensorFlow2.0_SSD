@@ -56,6 +56,17 @@ class LabelAnchors():
 
         return offset_array
 
+    def __throw_row_and_col(self, matrix, i, j):
+        # Throw away a row and a column of the matrix.
+        n = matrix.shape[0]
+        m = matrix.shape[1]
+        part_1 = matrix[0: i, 0: j]
+        part_2 = matrix[0: i, j + 1: m]
+        part_3 = matrix[i + 1: n, 0: j]
+        part_4 = matrix[i + 1: n, j + 1: m]
+
+        return np.concatenate((np.concatenate((part_1, part_2), axis=1), np.concatenate((part_3, part_4), axis=1)), axis=0)
+
     def get_results(self):
         # max_values : [[i1, j1], [i2, j2], ..., [in, jn]]
         max_values = self.__get_the_max_value_of_iou_array(iou_array=self.__generate_iou_array())
