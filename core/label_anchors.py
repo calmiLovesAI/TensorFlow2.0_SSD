@@ -1,4 +1,4 @@
-from configuration import IoU_threshold, IMAGE_HEIGHT, IAMGE_WIDTH
+from configuration import IoU_threshold, IMAGE_HEIGHT, IAMGE_WIDTH, negative_sample_num
 import numpy as np
 from utils import IoU
 
@@ -7,12 +7,13 @@ class LabelAnchors():
         # anchors : [batch_size, total number of anchors, 4]
         # labels shape :
         # [batch_size, num_of_objects_per_image(-1 for no object), 5(class + bbox coords)]
-        # class_preds : [batch_size, total number pf anchors, num_classes + 1]
+        # class_preds : [batch_size, total number of anchors, num_classes + 1]
         super(LabelAnchors, self).__init__()
         self.iou_threshold = IoU_threshold
         self.iou = IoU.IoU()
         self.anchors = anchors
         self.labels = labels
+        self.class_preds = class_preds
         self.batch_size = labels.shape[0]
         self.num_anchors = anchors.shape[1]
         self.num_true_boxes = labels.shape[1]
@@ -76,19 +77,39 @@ class LabelAnchors():
                         mask_list_each.append([1., 1., 1., 1.])
                         anchor_true_label_list_each.append([self.labels[b, j, 0]])
                     else:
+                        # the confidence that the anchor belongs to category 0 (background)
+                        cls_0_confidence = self.class_preds[b, i, 0]
                         offset_list_each.append([0., 0., 0., 0.])
                         mask_list_each.append([0., 0., 0., 0.])
-                        anchor_true_label_list_each.append([-1.])
+                        anchor_true_label_list_each.append([cls_0_confidence])
 
             offset_list.append(np.array(offset_list_each).flatten())
             mask_list.append(np.array(mask_list_each).flatten())
-            anchor_true_label_list.append(np.array(anchor_true_label_list_each).flatten())
+            anchor_true_label_list.append(self.__take_a_piece_from_array(np.array(anchor_true_label_list_each).flatten()))
 
         offset_list_array = np.array(offset_list)
         mask_list_array = np.array(mask_list)
         anchor_true_label_list_array = np.array(anchor_true_label_list)
         return offset_list_array, mask_list_array, anchor_true_label_list_array
 
+
+    def __take_a_piece_from_array(self, array):
+        temp = np.sort(array, axis=-1)
+        n = negative_sample_num
+        while n :
+            if temp[n] >= 1:
+                n -= 1
+            else:
+                break
+
+        t = temp[n]
+        for i in range(array.shape[0]):
+            if array[i] < t:
+                array[i] = -1
+            elif t <= array[i] < 1:
+                array[i] = 0
+
+        return array
 
 
     def __get_max_value_of_one_row(self, index, matrix):
