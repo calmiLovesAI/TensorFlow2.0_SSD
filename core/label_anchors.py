@@ -57,7 +57,7 @@ class LabelAnchors():
                                                  true_array=self.labels[b, true_box_index, -4:])
                 offset_list_each.append(offset_array)
                 mask_list_each.append([1., 1., 1., 1.])
-                anchor_true_label_list_each.append([1.])
+                anchor_true_label_list_each.append([self.labels[b, true_box_index, 0]])
                 iou_array = self.__throw_row_and_col(iou_array, anchor_index, true_box_index)
             # All true boxes have been allocated, then we allocate the remaining anchors.
             for i in range(self.num_anchors):
@@ -74,7 +74,7 @@ class LabelAnchors():
                                                          true_array=self.labels[b, j, -4:])
                         offset_list_each.append(offset_array)
                         mask_list_each.append([1., 1., 1., 1.])
-                        anchor_true_label_list_each.append([1.])
+                        anchor_true_label_list_each.append([self.labels[b, j, 0]])
                     else:
                         offset_list_each.append([0., 0., 0., 0.])
                         mask_list_each.append([0., 0., 0., 0.])

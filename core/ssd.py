@@ -1,14 +1,15 @@
 import tensorflow as tf
 from core.modules import concat_predictions, backbone, down_sample_layer, ClassPredictor, BoxPredictor
 from core import anchor
+from configuration import NUM_CLASSES, BATCH_SIZE
 
 class SSD(tf.keras.Model):
-    def __init__(self, num_classes, batch_size):
+    def __init__(self):
         super(SSD, self).__init__()
         self.sizes = [[0.2, 0.272], [0.37, 0.447], [0.54, 0.619], [0.71, 0.79], [0.88, 0.961]]
         self.ratios = [[1, 2, 0.5]] * 5
-        self.num_classes = num_classes
-        self.batch_size = batch_size
+        self.num_classes = NUM_CLASSES
+        self.batch_size = BATCH_SIZE
         self.num_anchors = len(self.sizes[0]) + len(self.ratios[0]) - 1
 
         self.backbone = backbone()
