@@ -61,14 +61,3 @@ class IoU():
 
         return iou_area
 
-    # def calculate_iou(self, n_dims_coord_pred, n_dims_coord_true):
-    #     assert n_dims_coord_pred.shape[0] == n_dims_coord_true.shape[0], \
-    #         "The dimension of two multidimensional arrays must be the same."
-    #     assert n_dims_coord_pred.shape[1] == n_dims_coord_true.shape[1] == 4, \
-    #         "The dimension of two multidimensional arrays must be the same."
-    #     num_of_boxes = n_dims_coord_pred.shape[0]
-    #     list_temp = []
-    #     for i in range(num_of_boxes):
-    #         list_temp.append(self.__calculate_iou_for_one_dim(coord_pred=n_dims_coord_pred[i, :],
-    #                                                           coord_true=n_dims_coord_true[i, :]))
-    #     return np.array(list_temp).reshape((-1, 1))

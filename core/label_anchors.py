@@ -33,8 +33,14 @@ class LabelAnchors():
 
 
     def get_results(self):
-        # iou_array_list = []
+        # Return : 3 arrays
+        offset_list = []
+        mask_list = []
+        anchor_true_label_list = []
         for b in range(self.batch_size):
+            offset_list_each = []
+            mask_list_each = []
+            anchor_true_label_list_each = []
             anchor_index_list = []
             # For every input image
             iou_array = self.__generate_iou_array(batch=b)
@@ -50,6 +56,9 @@ class LabelAnchors():
                 # Calculate the offset value.
                 offset_array = self.__get_offset(pred_array=self.anchors[0, anchor_index, :],
                                                  true_array=self.labels[b, true_box_index, -4:])
+                offset_list_each.append(offset_array)
+                mask_list_each.append([1., 1., 1., 1.])
+                anchor_true_label_list_each.append([1.])
                 iou_array = self.__throw_row_and_col(iou_array, anchor_index, true_box_index)
             # All true boxes have been allocated, then we allocate the remaining anchors.
             for i in range(self.num_anchors):
@@ -64,11 +73,23 @@ class LabelAnchors():
                         # calculate offset
                         offset_array = self.__get_offset(pred_array=self.anchors[0, i, :],
                                                          true_array=self.labels[b, j, -4:])
+                        offset_list_each.append(offset_array)
+                        mask_list_each.append([1., 1., 1., 1.])
+                        anchor_true_label_list_each.append([1.])
+                    else:
+                        offset_list_each.append([0., 0., 0., 0.])
+                        mask_list_each.append([0., 0., 0., 0.])
+                        anchor_true_label_list_each.append([0.])
 
+            offset_list.append(np.array(offset_list_each).flatten())
+            mask_list.append(np.array(mask_list_each).flatten())
+            anchor_true_label_list.append(np.array(anchor_true_label_list_each).flatten())
 
+        offset_list_array = np.array(offset_list)
+        mask_list_array = np.array(mask_list)
+        anchor_true_label_list_array = np.array(anchor_true_label_list)
+        return offset_list_array, mask_list_array, anchor_true_label_list_array
 
-
-            # iou_array_list.append(iou_array)
 
 
     def __get_max_value_of_one_row(self, index, matrix):
