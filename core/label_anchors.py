@@ -78,7 +78,7 @@ class LabelAnchors():
                     else:
                         offset_list_each.append([0., 0., 0., 0.])
                         mask_list_each.append([0., 0., 0., 0.])
-                        anchor_true_label_list_each.append([0.])
+                        anchor_true_label_list_each.append([-1.])
 
             offset_list.append(np.array(offset_list_each).flatten())
             mask_list.append(np.array(mask_list_each).flatten())
