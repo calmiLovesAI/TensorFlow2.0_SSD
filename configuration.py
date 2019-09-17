@@ -8,8 +8,11 @@ IAMGE_WIDTH = 256
 # the anchor is divided into negative classes, otherwise positive.
 IoU_threshold = 0.6
 
-negative_sample_num = 128
+background_sample_num = 128
 
 # focal loss
 alpha = 0.25
 gamma = 2
+
+# dataset
+PASCAL_VOC_DIR = "./dataset/VOCdevkit/VOC2012/"

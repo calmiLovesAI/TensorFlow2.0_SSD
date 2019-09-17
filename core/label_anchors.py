@@ -1,4 +1,4 @@
-from configuration import IoU_threshold, IMAGE_HEIGHT, IAMGE_WIDTH, negative_sample_num
+from configuration import IoU_threshold, IMAGE_HEIGHT, IAMGE_WIDTH, background_sample_num
 import numpy as np
 from utils import IoU
 
@@ -95,7 +95,7 @@ class LabelAnchors():
 
     def __take_a_piece_from_array(self, array):
         temp = np.sort(array, axis=-1)
-        n = negative_sample_num
+        n = background_sample_num
         while n :
             if temp[n] >= 1:
                 n -= 1
