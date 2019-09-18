@@ -113,5 +113,5 @@ class ParsePascalVOC():
 if __name__ == '__main__':
     parse = ParsePascalVOC()
     d1, d2, n1, n2 = parse.split_dataset()
-    print(n1)
-    print(n2)
+    for images, labels in d1:
+        print(labels.bounding_shape())
