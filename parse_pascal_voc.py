@@ -1,9 +1,12 @@
 import xml.dom.minidom as xdom
-from configuration import PASCAL_VOC_DIR, OBJECT_CLASSES, IMAGE_WIDTH, IMAGE_HEIGHT
+from configuration import PASCAL_VOC_DIR, OBJECT_CLASSES, \
+    IMAGE_WIDTH, IMAGE_HEIGHT, train_ratio, BATCH_SIZE
 import os
 import tensorflow as tf
 from PIL import Image
 from preprocess import preprocess_image
+import numpy as np
+from utils.dataset_format import get_length_of_dataset
 
 class ParsePascalVOC():
     def __init__(self):
@@ -85,14 +88,27 @@ class ParsePascalVOC():
         image_path, boxes = self.__prepare_dataset()
 
         labels = self.__get_labels(labels=boxes, image_path=image_path)
-        labels = tf.convert_to_tensor(labels)
         print(labels)
         print(type(labels))
 
-        image_dataset = tf.data.Dataset.from_tensor_slices(image_path).map(preprocess_image)
-        label_dataset = tf.data.Dataset.from_tensor_slices(labels)
+        image_count = len(image_path)
+        image_dataset = tf.data.Dataset.from_tensor_slices(image_path).shuffle(buffer_size=image_count)
+        # label_dataset = tf.data.Dataset.from_tensor_slices(labels)
+
+        train_dataset = image_dataset.take(int(image_count * train_ratio))
+        test_dataset = image_dataset.skip(int(image_count * train_ratio))
+
+        train_count = get_length_of_dataset(train_dataset)
+        test_count = get_length_of_dataset(test_dataset)
+
+        train_dataset = train_dataset.shuffle(buffer_size=train_count).batch(batch_size=BATCH_SIZE)
+        test_dataset = test_dataset.batch(batch_size=BATCH_SIZE)
+
+        return train_dataset, test_dataset, train_count, test_count
 
 
 if __name__ == '__main__':
     parse = ParsePascalVOC()
-    parse.split_dataset()
+    # d1, d2 = parse.split_dataset()
+    # print(get_length_of_dataset(d1))
+    # print(get_length_of_dataset(d2))
