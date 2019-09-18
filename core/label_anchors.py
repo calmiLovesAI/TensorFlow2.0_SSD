@@ -1,4 +1,4 @@
-from configuration import IoU_threshold, IMAGE_HEIGHT, IAMGE_WIDTH, background_sample_num
+from configuration import IoU_threshold, IMAGE_HEIGHT, IMAGE_WIDTH, background_sample_num
 import numpy as np
 from utils import IoU
 
@@ -125,7 +125,7 @@ class LabelAnchors():
         return [i, j]
 
     def __get_offset(self, pred_array, true_array):
-        pred_array = pred_array * [IAMGE_WIDTH, IMAGE_HEIGHT, IAMGE_WIDTH, IMAGE_HEIGHT]
+        pred_array = pred_array * [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT]
         offset_list = []
         for index in range(4):
             offset_list.append(true_array[index] - pred_array[index])

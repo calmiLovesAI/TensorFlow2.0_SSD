@@ -1,15 +1,15 @@
-# from xml.dom.minidom import parse
 import xml.dom.minidom as xdom
-from configuration import PASCAL_VOC_DIR, OBJECT_CLASSES
+from configuration import PASCAL_VOC_DIR, OBJECT_CLASSES, IMAGE_WIDTH, IMAGE_HEIGHT
 import os
-
+import tensorflow as tf
+from PIL import Image
+from preprocess import preprocess_image
 
 class ParsePascalVOC():
     def __init__(self):
         super(ParsePascalVOC, self).__init__()
         self.all_xml_dir = PASCAL_VOC_DIR + "Annotations"
-        pass
-
+        self.all_image_dir = PASCAL_VOC_DIR + "JPEGImages"
 
     # parse one xml file
     def __parse_xml(self, xml):
@@ -37,16 +37,64 @@ class ParsePascalVOC():
             obj_and_box_list.append(o_list)
         return image_name, obj_and_box_list
 
-    def prepare_dataset(self):
+    def __prepare_dataset(self):
         data_dict = {}
+        image_path_list = []
+        all_boxes_list = []
         for item in os.listdir(self.all_xml_dir):
             item_dir = os.path.join(self.all_xml_dir, item)
             image_name, boxes_list = self.__parse_xml(xml=item_dir)
+            image_path_list.append(os.path.join(self.all_image_dir, image_name))
+            all_boxes_list.append(boxes_list)
             data_dict[image_name] = boxes_list
-        return data_dict
+
+        # data_dict :
+        # {picture_1_name : [[obj_1's class, xmin, ymin, xmax, ymax], [obj_2's class, xmin, ymin, xmax, ymax], ...]
+        #  picture_2_name : [[obj_1's class, xmin, ymin, xmax, ymax], [obj_2's class, xmin, ymin, xmax, ymax], ...]
+        #  ......
+        #  }
+        return data_dict, image_path_list, all_boxes_list
+
+    def __scale_label(self, label, w_scale, h_scale):
+        for item in label:
+            # convert to float
+            item[1] = float(item[1])
+            item[2] = float(item[2])
+            item[3] = float(item[3])
+            item[4] = float(item[4])
+            # rescale the coordinates' value
+            item[1] *= w_scale
+            item[2] *= h_scale
+            item[3] *= w_scale
+            item[4] *= h_scale
+
+        return label
+
+    def __get_labels(self, labels, image_path):
+        label_list = []
+        for i in range(len(labels)):
+            # print(image_path[i])
+            img = Image.open(image_path[i])
+            w = img.size[0]
+            h = img.size[1]
+            w_scale = IMAGE_WIDTH / w
+            h_scale = IMAGE_HEIGHT / h
+            l = self.__scale_label(label=labels[i], w_scale=w_scale, h_scale=h_scale)
+            label_list.append(l)
+        return label_list
+
+    def split_dataset(self):
+        _, image_path, boxes = self.__prepare_dataset()
+
+        labels = self.__get_labels(labels=boxes, image_path=image_path)
+        labels = tf.convert_to_tensor(labels)
+        print(labels)
+        print(type(labels))
+
+        image_dataset = tf.data.Dataset.from_tensor_slices(image_path).map(preprocess_image)
+        label_dataset = tf.data.Dataset.from_tensor_slices(labels)
 
 
 if __name__ == '__main__':
     parse = ParsePascalVOC()
-    d = parse.prepare_dataset()
-    print(len(d))   # 17125
+    parse.split_dataset()

@@ -2,7 +2,8 @@
 BATCH_SIZE = 1
 NUM_CLASSES = 1
 IMAGE_HEIGHT = 256
-IAMGE_WIDTH = 256
+IMAGE_WIDTH = 256
+CHANNELS = 3
 
 # When the iou value of the anchor and the real box is less than the IoU_threshold,
 # the anchor is divided into negative classes, otherwise positive.

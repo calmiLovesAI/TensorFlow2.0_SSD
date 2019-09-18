@@ -1,4 +1,4 @@
-from configuration import IMAGE_HEIGHT, IAMGE_WIDTH
+from configuration import IMAGE_HEIGHT, IMAGE_WIDTH
 
 class IoU():
     def __init__(self):
@@ -40,7 +40,7 @@ class IoU():
     def calculate_iou(self, coord_pred, coord_true):
         # coord_pred : predicted anchors coordinates, [xmin, ymin, xmax, ymax]
         # coord_true : true anchors coordinates, [xmin, ymin, xmax, ymax]
-        coord_pred = coord_pred * [IAMGE_WIDTH, IMAGE_HEIGHT, IAMGE_WIDTH, IMAGE_HEIGHT]
+        coord_pred = coord_pred * [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT]
         x_intersection = self.__intersection_of_two_segments(coord_pred[0], coord_pred[2], coord_true[0], coord_true[2])
         y_intersection = self.__intersection_of_two_segments(coord_pred[1], coord_pred[3], coord_true[1], coord_true[3])
 
