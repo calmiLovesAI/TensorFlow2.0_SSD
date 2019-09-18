@@ -38,7 +38,6 @@ class ParsePascalVOC():
         return image_name, obj_and_box_list
 
     def __prepare_dataset(self):
-        data_dict = {}
         image_path_list = []
         all_boxes_list = []
         for item in os.listdir(self.all_xml_dir):
@@ -46,14 +45,13 @@ class ParsePascalVOC():
             image_name, boxes_list = self.__parse_xml(xml=item_dir)
             image_path_list.append(os.path.join(self.all_image_dir, image_name))
             all_boxes_list.append(boxes_list)
-            data_dict[image_name] = boxes_list
 
-        # data_dict :
-        # {picture_1_name : [[obj_1's class, xmin, ymin, xmax, ymax], [obj_2's class, xmin, ymin, xmax, ymax], ...]
-        #  picture_2_name : [[obj_1's class, xmin, ymin, xmax, ymax], [obj_2's class, xmin, ymin, xmax, ymax], ...]
-        #  ......
-        #  }
-        return data_dict, image_path_list, all_boxes_list
+        # image_name : [picture_1_name, picture_2_name, ...]
+        # all_boxes_list : [
+        #                   [[obj_1's class, xmin, ymin, xmax, ymax], [obj_2's class, xmin, ymin, xmax, ymax], ...],
+        #                   [[obj_1's class, xmin, ymin, xmax, ymax], [obj_2's class, xmin, ymin, xmax, ymax], ...],
+        #                   ]
+        return image_path_list, all_boxes_list
 
     def __scale_label(self, label, w_scale, h_scale):
         for item in label:
@@ -84,7 +82,7 @@ class ParsePascalVOC():
         return label_list
 
     def split_dataset(self):
-        _, image_path, boxes = self.__prepare_dataset()
+        image_path, boxes = self.__prepare_dataset()
 
         labels = self.__get_labels(labels=boxes, image_path=image_path)
         labels = tf.convert_to_tensor(labels)
