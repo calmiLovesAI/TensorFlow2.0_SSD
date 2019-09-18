@@ -88,15 +88,18 @@ class ParsePascalVOC():
         image_path, boxes = self.__prepare_dataset()
 
         labels = self.__get_labels(labels=boxes, image_path=image_path)
-        print(labels)
-        print(type(labels))
+        # print(labels)
+        # print(type(labels))
+        labels_ragged_tensor = tf.ragged.constant(labels)
 
         image_count = len(image_path)
         image_dataset = tf.data.Dataset.from_tensor_slices(image_path).shuffle(buffer_size=image_count)
-        # label_dataset = tf.data.Dataset.from_tensor_slices(labels)
+        label_dataset = tf.data.Dataset.from_tensor_slices(labels_ragged_tensor)
 
-        train_dataset = image_dataset.take(int(image_count * train_ratio))
-        test_dataset = image_dataset.skip(int(image_count * train_ratio))
+        dataset = tf.data.Dataset.zip((image_dataset, label_dataset))
+
+        train_dataset = dataset.take(int(image_count * train_ratio))
+        test_dataset = dataset.skip(int(image_count * train_ratio))
 
         train_count = get_length_of_dataset(train_dataset)
         test_count = get_length_of_dataset(test_dataset)
@@ -109,6 +112,6 @@ class ParsePascalVOC():
 
 if __name__ == '__main__':
     parse = ParsePascalVOC()
-    # d1, d2 = parse.split_dataset()
-    # print(get_length_of_dataset(d1))
-    # print(get_length_of_dataset(d2))
+    d1, d2, n1, n2 = parse.split_dataset()
+    print(n1)
+    print(n2)
