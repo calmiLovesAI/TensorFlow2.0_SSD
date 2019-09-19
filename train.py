@@ -2,7 +2,7 @@ import tensorflow as tf
 from core import ssd
 from parse_pascal_voc import ParsePascalVOC
 from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, BATCH_SIZE, \
-    CHANNELS, EPOCHS, cls_loss_weight, reg_loss_weight
+    CHANNELS, EPOCHS, cls_loss_weight, reg_loss_weight, save_model_dir
 from core.label_anchors import LabelAnchors
 from core.loss import SmoothL1Loss
 import math
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     test_reg_loss = SmoothL1Loss()
     calculate_test_loss = tf.keras.metrics.Mean()
 
-    @tf.function
+    # @tf.function
     def train_step(images, labels):
         with tf.GradientTape() as tape:
             anchors, class_preds, box_preds = model(images)
@@ -65,3 +65,6 @@ if __name__ == '__main__':
                                                                                                   calculate_train_loss.result(),
                                                                                                   train_class_metric.result(),
                                                                                                   train_box_metric.result()))
+
+
+    tf.saved_model.save(model, save_model_dir)

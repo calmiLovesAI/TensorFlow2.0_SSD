@@ -88,7 +88,8 @@ class LabelAnchors():
 
             offset_list.append(np.array(offset_list_each).flatten())
             mask_list.append(np.array(mask_list_each).flatten())
-            anchor_true_label_list.append(self.__take_a_piece_from_array(np.array(anchor_true_label_list_each).flatten()))
+            # anchor_true_label_list.append(self.__take_a_piece_from_array(np.array(anchor_true_label_list_each).flatten()))
+            anchor_true_label_list.append(np.array(anchor_true_label_list_each).flatten())
 
         offset_list_array = np.array(offset_list)
         mask_list_array = np.array(mask_list)

@@ -29,3 +29,7 @@ OBJECT_CLASSES = {"person": 1, "bird": 2, "cat": 3, "cow": 4, "dog": 5,
                   "pottedplant": 18, "sofa": 19, "tvmonitor": 20}
 # (0, 1)
 train_ratio = 0.8
+
+
+# directory of saving model
+save_model_dir = "saved_model"
