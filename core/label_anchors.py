@@ -1,6 +1,7 @@
 from configuration import IoU_threshold, IMAGE_HEIGHT, IMAGE_WIDTH, background_sample_num
 import numpy as np
 from utils import IoU
+import tensorflow as tf
 
 class LabelAnchors():
     def __init__(self, anchors, labels, class_preds):
@@ -130,7 +131,9 @@ class LabelAnchors():
         pred_array = pred_array * [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT]
         offset_list = []
         for index in range(4):
-            offset_list.append(true_array[index] - pred_array[index])
+            t = tf.dtypes.cast(true_array[index], tf.float32)
+            p = tf.dtypes.cast(pred_array[index], tf.float32)
+            offset_list.append(t - p)
 
         offset_array = np.array(offset_list)
 

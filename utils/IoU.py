@@ -1,4 +1,5 @@
 from configuration import IMAGE_HEIGHT, IMAGE_WIDTH
+import tensorflow as tf
 
 class IoU():
     def __init__(self):
@@ -11,6 +12,11 @@ class IoU():
             return False
 
     def __intersection_of_two_segments(self, a_1, a_2, b_1, b_2):
+        # cast dtype
+        a_1 = tf.dtypes.cast(a_1, tf.float32)
+        a_2 = tf.dtypes.cast(a_2, tf.float32)
+        b_1 = tf.dtypes.cast(b_1, tf.float32)
+        b_2 = tf.dtypes.cast(b_2, tf.float32)
         a_list = [a_1, a_2]
         b_list = [b_1, b_2]
         a_min = min(a_list)
@@ -35,6 +41,7 @@ class IoU():
 
     def __rectangle_area(self, x1, x2, y1, y2):
         area = abs(x1 - x2) * abs(y1 - y2)
+        area = tf.dtypes.cast(area, tf.float32)
         return area
 
     def calculate_iou(self, coord_pred, coord_true):
