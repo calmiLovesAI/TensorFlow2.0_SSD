@@ -74,7 +74,7 @@ class ParsePascalVOC():
     def __get_labels(self, labels, image_path):
         label_list = []
         for i in range(len(labels)):
-            # print(image_path[i])
+            print("Processing label of picture : {}".format(image_path[i]))
             img = Image.open(image_path[i])
             w = img.size[0]
             h = img.size[1]
