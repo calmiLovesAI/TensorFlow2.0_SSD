@@ -15,7 +15,7 @@ class SmoothL1Loss(tf.keras.losses.Loss):
     def __init__(self):
         super(SmoothL1Loss, self).__init__()
 
-    def call(self, y_true, y_pred, mask):
+    def __call__(self, y_true, y_pred, mask):
         return tf.reduce_mean(smooth_l1((y_pred - y_true) * mask))
 
 
