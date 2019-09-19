@@ -1,7 +1,7 @@
 import tensorflow as tf
 from core import ssd
 from parse_pascal_voc import ParsePascalVOC
-from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS
+from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS, EPOCHS
 from core.label_anchors import LabelAnchors
 
 if __name__ == '__main__':
@@ -28,9 +28,16 @@ if __name__ == '__main__':
     test_cls_loss = tf.keras.losses.SparseCategoricalCrossentropy()
     test_reg_loss = tf.keras.losses.MeanSquaredError()
 
-    @tf.function
-    def train_step(images, labels):
-        with tf.GradientTape() as tape:
+    # @tf.function
+    # def train_step(images, labels):
+    #     with tf.GradientTape() as tape:
+    #         anchors, class_preds, box_preds = model(images)
+    #         label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
+    #         a, b, c = label_anchors.get_results()
+
+
+    for n in range(EPOCHS):
+        for images, labels in train_dataset:
             anchors, class_preds, box_preds = model(images)
             label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
             a, b, c = label_anchors.get_results()

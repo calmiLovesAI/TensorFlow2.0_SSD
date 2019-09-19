@@ -16,14 +16,16 @@ class LabelAnchors():
         self.class_preds = class_preds
         self.batch_size = labels.shape[0]
         self.num_anchors = anchors.shape[1]
-        self.num_true_boxes = labels.shape[1]
+        # self.num_true_boxes = labels.shape[1]
 
 
     def __generate_iou_array(self, batch):
         iou_list = []
+        num_true_boxes = self.labels[batch].bounding_shape().numpy()[0]
+        print("num_true_boxes = ", num_true_boxes)
         for i in range(self.num_anchors):
             temp_list = []
-            for j in range(self.num_true_boxes):
+            for j in range(num_true_boxes):
                 iou_ij = self.iou.calculate_iou(coord_pred=self.anchors[0, i, :],
                                                 coord_true=self.labels[batch, j, -4:])
                 temp_list.append(iou_ij)
