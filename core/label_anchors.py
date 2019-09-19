@@ -22,7 +22,7 @@ class LabelAnchors():
 
     def __generate_iou_array(self, batch):
         iou_list = []
-        num_true_boxes = self.labels[batch].bounding_shape().numpy()[0]
+        num_true_boxes = self.labels[batch].bounding_shape()[0]
         print("num_true_boxes = ", num_true_boxes)
         for i in range(self.num_anchors):
             temp_list = []

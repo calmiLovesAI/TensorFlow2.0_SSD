@@ -27,4 +27,4 @@ A tensorflow_2.0 implementation of SSD (Single Shot MultiBox Detector) .
 + The paper: [SSD: Single Shot MultiBox Detector](https://arxiv.org/abs/1512.02325)
 + http://zh.gluon.ai/chapter_computer-vision/ssd.html
 + https://blog.csdn.net/XiangJiaoJun_/article/details/84503224
-+ MXNet tutorial on bilibili : <br/> (1) https://www.bilibili.com/video/av16012497<br/> (2)https://www.bilibili.com/video/av16225415<br/> (3)https://www.bilibili.com/video/av16440968
++ MXNet tutorial on bilibili : <br/> (1) https://www.bilibili.com/video/av16012497<br/> (2) https://www.bilibili.com/video/av16225415<br/> (3) https://www.bilibili.com/video/av16440968

@@ -5,7 +5,6 @@ import os
 import tensorflow as tf
 from PIL import Image
 from preprocess import preprocess_image
-import numpy as np
 from utils.dataset_format import get_length_of_dataset
 
 class ParsePascalVOC():
@@ -44,6 +43,7 @@ class ParsePascalVOC():
         image_path_list = []
         all_boxes_list = []
         for item in os.listdir(self.all_xml_dir):
+            print("Processing file : {}".format(item))
             item_dir = os.path.join(self.all_xml_dir, item)
             image_name, boxes_list = self.__parse_xml(xml=item_dir)
             image_path_list.append(os.path.join(self.all_image_dir, image_name))

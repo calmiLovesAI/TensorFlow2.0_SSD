@@ -35,7 +35,7 @@ if __name__ == '__main__':
     test_reg_loss = SmoothL1Loss()
     calculate_test_loss = tf.keras.metrics.Mean()
 
-    # @tf.function
+    @tf.function
     def train_step(images, labels):
         with tf.GradientTape() as tape:
             anchors, class_preds, box_preds = model(images)
