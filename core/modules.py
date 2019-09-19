@@ -28,7 +28,8 @@ class ClassPredictor(tf.keras.layers.Layer):
         self.conv = tf.keras.layers.Conv2D(filters=num_anchors * (num_classes + 1),
                                            kernel_size=(3, 3),
                                            strides=(1, 1),
-                                           padding="same")
+                                           padding="same",
+                                           activation=tf.keras.activations.softmax)
         self.flatten = tf.keras.layers.Flatten()
 
     def call(self, inputs, **kwargs):

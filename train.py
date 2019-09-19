@@ -28,16 +28,13 @@ if __name__ == '__main__':
     test_cls_loss = tf.keras.losses.SparseCategoricalCrossentropy()
     test_reg_loss = tf.keras.losses.MeanSquaredError()
 
-    # @tf.function
-    # def train_step(images, labels):
-    #     with tf.GradientTape() as tape:
-    #         anchors, class_preds, box_preds = model(images)
-    #         label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
-    #         a, b, c = label_anchors.get_results()
-
-
-    for n in range(EPOCHS):
-        for images, labels in train_dataset:
+    @tf.function
+    def train_step(images, labels):
+        with tf.GradientTape() as tape:
             anchors, class_preds, box_preds = model(images)
             label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
-            a, b, c = label_anchors.get_results()
+            box_target, box_mask, cls_target = label_anchors.get_results()
+
+
+    # for n in range(EPOCHS):
+    #     for images, labels in train_dataset:

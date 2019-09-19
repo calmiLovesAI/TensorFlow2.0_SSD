@@ -52,7 +52,7 @@ class LabelAnchors():
                 # First find the maximum value of all elements of the matrix, and then
                 # according to the row and column where the maximum value is located,
                 # we can obtain the corresponding anchor and true box match.
-                match_list = self.__get_the_max_value_of_matix(iou_array)
+                match_list = self.__get_the_max_value_of_matrix(iou_array)
                 anchor_index = match_list[0]
                 anchor_index_list.append(anchor_index)
                 true_box_index = match_list[1]
@@ -121,7 +121,7 @@ class LabelAnchors():
 
 
     # Return the row and column where the maximum value is located.
-    def __get_the_max_value_of_matix(self, matrix):
+    def __get_the_max_value_of_matrix(self, matrix):
         max_index = np.argmax(matrix)
         i = max_index % matrix.shape[0]
         j = max_index % matrix.shape[1]
