@@ -93,10 +93,11 @@ class ParsePascalVOC():
         labels_ragged_tensor = tf.ragged.constant(labels)
 
         image_count = len(image_path)
-        image_dataset = tf.data.Dataset.from_tensor_slices(image_path).shuffle(buffer_size=1000).map(preprocess_image)
+        image_dataset = tf.data.Dataset.from_tensor_slices(image_path).map(preprocess_image)
         label_dataset = tf.data.Dataset.from_tensor_slices(labels_ragged_tensor)
 
         dataset = tf.data.Dataset.zip((image_dataset, label_dataset))
+        dataset = dataset.shuffle(buffer_size=1000)
 
         train_dataset = dataset.take(int(image_count * train_ratio))
         test_dataset = dataset.skip(int(image_count * train_ratio))
