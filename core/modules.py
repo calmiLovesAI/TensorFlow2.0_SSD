@@ -55,28 +55,28 @@ class BoxPredictor(tf.keras.layers.Layer):
         return x
 
 
-def down_sample(num_filters):
-    x = tf.keras.Sequential()
-    for _ in range(2):
-        x.add(tf.keras.layers.Conv2D(filters=num_filters,
-                                     kernel_size=(3, 3),
-                                     strides=(1, 1),
-                                     padding="same"))
-        x.add(tf.keras.layers.BatchNormalization())
-        x.add(tf.keras.layers.Activation(tf.keras.activations.relu))
-    x.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
-
-    return x
+# def down_sample(num_filters):
+#     x = tf.keras.Sequential()
+#     for _ in range(2):
+#         x.add(tf.keras.layers.Conv2D(filters=num_filters,
+#                                      kernel_size=(3, 3),
+#                                      strides=(1, 1),
+#                                      padding="same"))
+#         x.add(tf.keras.layers.BatchNormalization())
+#         x.add(tf.keras.layers.Activation(tf.keras.activations.relu))
+#     x.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
+#
+#     return x
 
 
 def concat_predictions(preds):
     return tf.concat(values=preds, axis=1)
 
 
-def backbone():
-    out = tf.keras.Sequential()
-    for num_filter in [16, 32, 64]:
-        out.add(down_sample(num_filter))
-    return out
+# def backbone():
+#     out = tf.keras.Sequential()
+#     for num_filter in [16, 32, 64]:
+#         out.add(down_sample(num_filter))
+#     return out
 
 

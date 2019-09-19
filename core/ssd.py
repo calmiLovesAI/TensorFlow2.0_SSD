@@ -2,6 +2,7 @@ import tensorflow as tf
 from core.modules import concat_predictions, backbone, down_sample_layer, ClassPredictor, BoxPredictor
 from core import anchor
 from configuration import NUM_CLASSES, BATCH_SIZE
+from core.models import mobilenet_v2
 
 class SSD(tf.keras.Model):
     def __init__(self):
@@ -12,7 +13,7 @@ class SSD(tf.keras.Model):
         self.batch_size = BATCH_SIZE
         self.num_anchors = len(self.sizes[0]) + len(self.ratios[0]) - 1
 
-        self.backbone = backbone()
+        self.backbone = mobilenet_v2.MobileNet_V2()
 
         self.down_sample_1 = down_sample_layer(num_filter=128)
         self.down_sample_2 = down_sample_layer(num_filter=128)

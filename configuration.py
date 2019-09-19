@@ -2,8 +2,8 @@
 EPOCHS = 50
 BATCH_SIZE = 8
 NUM_CLASSES = 20
-IMAGE_HEIGHT = 256
-IMAGE_WIDTH = 256
+IMAGE_HEIGHT = 300
+IMAGE_WIDTH = 300
 CHANNELS = 3
 
 # When the iou value of the anchor and the real box is less than the IoU_threshold,
