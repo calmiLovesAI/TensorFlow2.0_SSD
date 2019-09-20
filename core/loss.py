@@ -20,8 +20,15 @@ class SmoothL1Loss(tf.keras.losses.Loss):
 
 
 def smooth_l1(x):
-    if tf.math.abs(x) < 1:
-        y = 0.5 * tf.math.pow(x, 2)
-    else:
-        y = tf.math.abs(x) - 0.5
+    x = tf.dtypes.cast(x, tf.float32)
+    y = tf.where(
+        tf.math.greater(1, tf.math.abs(x)),
+        0.5 * tf.math.pow(x, 2),
+        tf.math.abs(x) - 0.5
+    )
     return y
+
+
+if __name__ == '__main__':
+    a = tf.constant([1, 2, 3])
+    print(smooth_l1(a))
