@@ -2,7 +2,7 @@ import tensorflow as tf
 from core import ssd
 from parse_pascal_voc import ParsePascalVOC
 from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, BATCH_SIZE, \
-    CHANNELS, EPOCHS, cls_loss_weight, reg_loss_weight, save_model_dir
+    CHANNELS, EPOCHS, cls_loss_weight, reg_loss_weight, save_model_dir, NUM_CLASSES
 from core.label_anchors import LabelAnchors
 from core.loss import SmoothL1Loss
 import math
@@ -53,7 +53,10 @@ if __name__ == '__main__':
         optimizer.apply_gradients(grads_and_vars=zip(gradients, model.trainable_variables))
 
         calculate_train_loss(loss)
-        train_class_metric.update_state(y_true=cls_target, y_pred=class_preds)
+        cls_target = tf.dtypes.cast(cls_target, tf.int32)
+        # print("cls_target = {}".format(cls_target))
+        cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
+        train_class_metric.update_state(y_true=cls_target_onehot, y_pred=class_preds)
         train_box_metric.update_state(y_true=box_target, y_pred=box_preds * box_mask)
 
 

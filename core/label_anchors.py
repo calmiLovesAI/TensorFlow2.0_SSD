@@ -81,10 +81,10 @@ class LabelAnchors():
                         anchor_true_label_list_each.append([self.labels[b, j, 0]])
                     else:
                         # the confidence that the anchor belongs to category 0 (background)
-                        cls_0_confidence = self.class_preds[b, i, 0]
+                        # cls_0_confidence = self.class_preds[b, i, 0]
                         offset_list_each.append([0., 0., 0., 0.])
                         mask_list_each.append([0., 0., 0., 0.])
-                        anchor_true_label_list_each.append([cls_0_confidence])
+                        anchor_true_label_list_each.append([0])
 
             offset_list.append(np.array(offset_list_each).flatten())
             mask_list.append(np.array(mask_list_each).flatten())
