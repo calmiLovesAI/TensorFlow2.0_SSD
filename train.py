@@ -30,7 +30,7 @@ if __name__ == '__main__':
     test_box_metric = tf.keras.metrics.MeanAbsoluteError()
 
     # optimizer
-    optimizer = tf.keras.optimizers.Adadelta()
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
     # loss
     train_cls_loss = tf.keras.losses.SparseCategoricalCrossentropy()
