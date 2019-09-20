@@ -105,7 +105,7 @@ class ParsePascalVOC():
         train_count = get_length_of_dataset(train_dataset)
         test_count = get_length_of_dataset(test_dataset)
 
-        train_dataset = train_dataset.shuffle(buffer_size=train_count).batch(batch_size=BATCH_SIZE)
+        train_dataset = train_dataset.shuffle(buffer_size=1000).batch(batch_size=BATCH_SIZE)
         test_dataset = test_dataset.batch(batch_size=BATCH_SIZE)
 
         return train_dataset, test_dataset, train_count, test_count
