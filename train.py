@@ -46,6 +46,8 @@ if __name__ == '__main__':
             anchors, class_preds, box_preds = model(images)
             label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
             box_target, box_mask, cls_target = label_anchors.get_results()
+            print("class_preds = {}".format(class_preds))
+            print("cls_target = {}".format(cls_target))
             cls_loss = train_cls_loss(y_pred=class_preds, y_true=cls_target)
             reg_loss = train_reg_loss(box_target, box_preds, box_mask)
             loss = cls_loss_weight * cls_loss + reg_loss_weight * reg_loss
@@ -58,7 +60,6 @@ if __name__ == '__main__':
         cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
         train_class_metric.update_state(y_true=cls_target_onehot, y_pred=class_preds)
         train_box_metric.update_state(y_true=box_target, y_pred=box_preds * box_mask)
-
 
 
     for epoch in range(EPOCHS):

@@ -59,10 +59,10 @@ class ParsePascalVOC():
     def __scale_label(self, label, w_scale, h_scale):
         for item in label:
             # convert to float
-            item[1] = float(item[1])
-            item[2] = float(item[2])
-            item[3] = float(item[3])
-            item[4] = float(item[4])
+            item[1] = int(float(item[1]))
+            item[2] = int(float(item[2]))
+            item[3] = int(float(item[3]))
+            item[4] = int(float(item[4]))
             # rescale the coordinates' value
             item[1] *= w_scale
             item[2] *= h_scale
