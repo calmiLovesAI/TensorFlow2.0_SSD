@@ -30,13 +30,13 @@ if __name__ == '__main__':
     test_box_metric = tf.keras.metrics.MeanAbsoluteError()
 
     # optimizer
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+    optimizer = tf.keras.optimizers.Adadelta()
 
     # loss
-    train_cls_loss = tf.keras.losses.SparseCategoricalCrossentropy()
+    train_cls_loss = tf.keras.losses.CategoricalCrossentropy()
     train_reg_loss = SmoothL1Loss()
     calculate_train_loss = tf.keras.metrics.Mean()
-    test_cls_loss = tf.keras.losses.SparseCategoricalCrossentropy()
+    test_cls_loss = tf.keras.losses.CategoricalCrossentropy()
     test_reg_loss = SmoothL1Loss()
     calculate_test_loss = tf.keras.metrics.Mean()
 
@@ -47,18 +47,23 @@ if __name__ == '__main__':
             label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
             box_target, box_mask, cls_target = label_anchors.get_results()
             print("class_preds = {}".format(class_preds))
+            print(class_preds.shape)
             print("cls_target = {}".format(cls_target))
-            cls_loss = train_cls_loss(y_pred=class_preds, y_true=cls_target)
+            print(cls_target.shape)
+            cls_target = tf.dtypes.cast(cls_target, tf.int32)
+            cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
+            cls_loss = train_cls_loss(y_pred=class_preds, y_true=cls_target_onehot)
             reg_loss = train_reg_loss(box_target, box_preds, box_mask)
             loss = cls_loss_weight * cls_loss + reg_loss_weight * reg_loss
         gradients = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(grads_and_vars=zip(gradients, model.trainable_variables))
 
         calculate_train_loss(loss)
-        cls_target = tf.dtypes.cast(cls_target, tf.int32)
+        # cls_target = tf.dtypes.cast(cls_target, tf.int32)
         # print("cls_target = {}".format(cls_target))
-        cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
-        train_class_metric.update_state(y_true=cls_target_onehot, y_pred=class_preds)
+        # cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
+        class_preds_argmax = tf.argmax(class_preds, axis=-1)
+        train_class_metric.update_state(y_true=cls_target, y_pred=class_preds_argmax)
         train_box_metric.update_state(y_true=box_target, y_pred=box_preds * box_mask)
 
 
