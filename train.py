@@ -47,9 +47,9 @@ if __name__ == '__main__':
             label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
             box_target, box_mask, cls_target = label_anchors.get_results()
             print("class_preds = {}".format(class_preds))
-            print(class_preds.shape)
+            # print(class_preds.shape)
             print("cls_target = {}".format(cls_target))
-            print(cls_target.shape)
+            # print(cls_target.shape)
             cls_target = tf.dtypes.cast(cls_target, tf.int32)
             cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
             cls_loss = train_cls_loss(y_pred=class_preds, y_true=cls_target_onehot)
@@ -59,10 +59,7 @@ if __name__ == '__main__':
         optimizer.apply_gradients(grads_and_vars=zip(gradients, model.trainable_variables))
 
         calculate_train_loss(loss)
-        # cls_target = tf.dtypes.cast(cls_target, tf.int32)
-        # print("cls_target = {}".format(cls_target))
-        # cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
-        class_preds_argmax = tf.argmax(class_preds, axis=-1)
+        class_preds_argmax = tf.math.argmax(class_preds, axis=-1)
         train_class_metric.update_state(y_true=cls_target, y_pred=class_preds_argmax)
         train_box_metric.update_state(y_true=box_target, y_pred=box_preds * box_mask)
 
