@@ -34,10 +34,10 @@ if __name__ == '__main__':
 
     # loss
     train_cls_loss = tf.keras.losses.CategoricalCrossentropy()
-    train_reg_loss = SmoothL1Loss()
+    # train_reg_loss = SmoothL1Loss()
     calculate_train_loss = tf.keras.metrics.Mean()
     test_cls_loss = tf.keras.losses.CategoricalCrossentropy()
-    test_reg_loss = SmoothL1Loss()
+    # test_reg_loss = SmoothL1Loss()
     calculate_test_loss = tf.keras.metrics.Mean()
 
     # @tf.function
@@ -46,14 +46,15 @@ if __name__ == '__main__':
             anchors, class_preds, box_preds = model(images)
             label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
             box_target, box_mask, cls_target = label_anchors.get_results()
-            print("class_preds = {}".format(class_preds))
+            # print("class_preds = {}".format(class_preds))
             # print(class_preds.shape)
-            print("cls_target = {}".format(cls_target))
+            # print("cls_target = {}".format(cls_target))
             # print(cls_target.shape)
             cls_target = tf.dtypes.cast(cls_target, tf.int32)
             cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
             cls_loss = train_cls_loss(y_pred=class_preds, y_true=cls_target_onehot)
-            reg_loss = train_reg_loss(box_target, box_preds, box_mask)
+            train_reg_loss = SmoothL1Loss(mask=box_mask)
+            reg_loss = train_reg_loss(box_target, box_preds)
             loss = cls_loss_weight * cls_loss + reg_loss_weight * reg_loss
         gradients = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(grads_and_vars=zip(gradients, model.trainable_variables))
