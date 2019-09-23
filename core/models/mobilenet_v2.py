@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 class BottleNeck(tf.keras.layers.Layer):
     def __init__(self, input_channels, output_channels, expansion_factor, stride):
         self.stride = stride
@@ -22,7 +23,7 @@ class BottleNeck(tf.keras.layers.Layer):
         self.bn3 = tf.keras.layers.BatchNormalization()
         self.linear = tf.keras.layers.Activation(tf.keras.activations.linear)
 
-    def call(self, inputs):
+    def call(self, inputs, **kwargs):
         if self.stride == 1 and self.input_channels == self.output_channels:
             x = self.conv1(inputs)
             x = self.bn1(x)
@@ -122,7 +123,7 @@ class MobileNet_V2(tf.keras.Model):
         #                                     padding="same",
         #                                     activation=tf.keras.activations.softmax)
 
-    def call(self, inputs):
+    def call(self, inputs, training=None, mask=None):
         x = self.conv1(inputs)
         x = self.bottleneck_1(x)
         x = self.bottleneck_2(x)

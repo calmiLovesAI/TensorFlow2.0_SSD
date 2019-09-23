@@ -15,7 +15,7 @@ class SmoothL1Loss(tf.keras.losses.Loss):
     def __init__(self):
         super(SmoothL1Loss, self).__init__()
 
-    def __call__(self, y_true, y_pred, mask):
+    def call(self, y_true, y_pred, mask):
         y_true = tf.dtypes.cast(y_true, tf.float32)
         y_pred = tf.dtypes.cast(y_pred, tf.float32)
         mask = tf.dtypes.cast(mask, tf.float32)
