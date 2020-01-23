@@ -1,6 +1,8 @@
 # TensorFlow2.0_SSD
 A tensorflow_2.0 implementation of SSD (Single Shot MultiBox Detector) .
 
+**Note: This project is under development, which means it is not available now.**
+
 ## Requirements:
 + Python >= 3.6
 + TensorFlow >= 2.0.0-rc1
