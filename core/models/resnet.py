@@ -53,7 +53,7 @@ def make_bottleneck_layer(filter_num, blocks, stride=1):
     return res_block
 
 
-class ResNet50(tf.keras.Model):
+class ResNet50(tf.keras.layers.Layer):
     def __init__(self):
         super(ResNet50, self).__init__()
         self.conv1 = tf.keras.layers.Conv2D(filters=64,
@@ -74,7 +74,7 @@ class ResNet50(tf.keras.Model):
                                             blocks=6,
                                             stride=2)
 
-    def call(self, inputs, training=None, mask=None):
+    def call(self, inputs, training=None, **kwargs):
         x = self.conv1(inputs)
         x = self.bn1(x, training=training)
         x = tf.nn.relu(x)

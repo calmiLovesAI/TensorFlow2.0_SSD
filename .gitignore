@@ -2,4 +2,4 @@
 __pycache__
 /dataset/*
 !/dataset/README.md
-/test
+test_ssd.py
