@@ -1,79 +1,67 @@
 import tensorflow as tf
-from core.modules import concat_predictions, down_sample_layer, ClassPredictor, BoxPredictor
-from core import anchor
-from configuration import NUM_CLASSES, BATCH_SIZE, SIZES, RATIOS
-from core.models import mobilenet_v2
+from core.models.resnet import ResNet50
+from configuration import NUM_CLASSES, ASPECT_RATIOS
 
 
 class SSD(tf.keras.Model):
     def __init__(self):
         super(SSD, self).__init__()
-        self.sizes = SIZES
-        self.ratios = RATIOS
-        self.num_classes = NUM_CLASSES
-        self.batch_size = BATCH_SIZE
-        self.num_anchors = len(self.sizes[0]) + len(self.ratios[0]) - 1
+        self.num_classes = NUM_CLASSES + 1
+        self.anchor_ratios = ASPECT_RATIOS
 
-        self.backbone = mobilenet_v2.MobileNet_V2()
+        self.backbone = ResNet50()
+        self.conv1 = tf.keras.layers.Conv2D(filters=1024, kernel_size=(1, 1), strides=1, padding="same")
+        self.conv2_1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(1, 1), strides=1, padding="same")
+        self.conv2_2 = tf.keras.layers.Conv2D(filters=512, kernel_size=(3, 3), strides=2, padding="same")
+        self.conv3_1 = tf.keras.layers.Conv2D(filters=128, kernel_size=(1, 1), strides=1, padding="same")
+        self.conv3_2 = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), strides=2, padding="same")
+        self.conv4_1 = tf.keras.layers.Conv2D(filters=128, kernel_size=(1, 1), strides=1, padding="same")
+        self.conv4_2 = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), strides=2, padding="same")
+        self.pool = tf.keras.layers.GlobalAveragePooling2D()
 
-        self.down_sample_1 = down_sample_layer(num_filter=128)
-        self.down_sample_2 = down_sample_layer(num_filter=128)
-        self.down_sample_3 = down_sample_layer(num_filter=128)
+        self.predict_1 = self._predict_layer(k=self._get_k(i=0))
+        self.predict_2 = self._predict_layer(k=self._get_k(i=1))
+        self.predict_3 = self._predict_layer(k=self._get_k(i=2))
+        self.predict_4 = self._predict_layer(k=self._get_k(i=3))
+        self.predict_5 = self._predict_layer(k=self._get_k(i=4))
+        self.predict_6 = self._predict_layer(k=self._get_k(i=5))
 
-        # self.maxpool = tf.keras.layers.MaxPool2D(pool_size=(4, 4))
-        self.maxpool = tf.keras.layers.GlobalMaxPooling2D()
+    def _predict_layer(self, k):
+        filter_num = k * (self.num_classes + 4)
+        return tf.keras.layers.Conv2D(filters=filter_num, kernel_size=(3, 3), strides=1, padding="same")
 
-    def __get_anchors(self, feature_map, sizes, ratios):
-        anchor_instantiation = anchor.Anchors(feature_map=feature_map, sizes=sizes, ratios=ratios)
-        anchors = anchor_instantiation.get_all_default_boxes()
-        anchors = anchors.reshape((1, -1, 4))
-
-        return anchors
-
-    def __get_class_preds(self, feature_map):
-        class_predictor_block = ClassPredictor(self.num_anchors, self.num_classes)
-        class_preds = class_predictor_block(feature_map)
-
-        return class_preds
-
-    def __get_box_preds(self, feature_map):
-        box_predictor_block = BoxPredictor(self.num_anchors)
-        box_preds = box_predictor_block(feature_map)
-
-        return box_preds
+    def _get_k(self, i):
+        # k is the number of boxes generated at each position of the feature map.
+        return len(self.anchor_ratios[i]) + 1
 
     def call(self, inputs, training=None, mask=None):
-        anchors_list, class_preds_list, box_preds_list = [], [], []
-        x = self.backbone(inputs)
-        anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[0], ratios=self.ratios[0]))
-        class_preds_list.append(self.__get_class_preds(feature_map=x))
-        box_preds_list.append(self.__get_box_preds(feature_map=x))
+        branch_1, x = self.backbone(inputs, training=training)
+        predict_1 = self.predict_1(branch_1)
 
-        x = self.down_sample_1(x)
-        anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[1], ratios=self.ratios[1]))
-        class_preds_list.append(self.__get_class_preds(feature_map=x))
-        box_preds_list.append(self.__get_box_preds(feature_map=x))
+        x = self.conv1(x)
+        branch_2 = x
+        predict_2 = self.predict_2(branch_2)
 
-        x = self.down_sample_2(x)
-        anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[2], ratios=self.ratios[2]))
-        class_preds_list.append(self.__get_class_preds(feature_map=x))
-        box_preds_list.append(self.__get_box_preds(feature_map=x))
+        x = self.conv2_1(x)
+        x = self.conv2_2(x)
+        branch_3 = x
+        predict_3 = self.predict_3(branch_3)
 
-        x = self.down_sample_3(x)
-        anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[3], ratios=self.ratios[3]))
-        class_preds_list.append(self.__get_class_preds(feature_map=x))
-        box_preds_list.append(self.__get_box_preds(feature_map=x))
+        x = self.conv3_1(x)
+        x = self.conv3_2(x)
+        branch_4 = x
+        predict_4 = self.predict_4(branch_4)
 
-        x = self.maxpool(x)
-        x = tf.reshape(x, shape=[-1, 1, 1, x.shape[1]])
-        anchors_list.append(self.__get_anchors(feature_map=x, sizes=self.sizes[4], ratios=self.ratios[4]))
-        class_preds_list.append(self.__get_class_preds(feature_map=x))
-        box_preds_list.append(self.__get_box_preds(feature_map=x))
+        x = self.conv4_1(x)
+        x = self.conv4_2(x)
+        branch_5 = x
+        predict_5 = self.predict_5(branch_5)
 
-        anchors = concat_predictions(anchors_list)
-        class_preds = concat_predictions(class_preds_list)
-        box_preds = concat_predictions(box_preds_list)
+        branch_6 = self.pool(x)
+        branch_6 = tf.expand_dims(input=branch_6, axis=1)
+        branch_6 = tf.expand_dims(input=branch_6, axis=2)
+        predict_6 = self.predict_6(branch_6)
 
-        class_preds= tf.reshape(class_preds, shape=(self.batch_size, -1, self.num_classes+1))
+        # predict_i shape : (batch_size, h, w, k * (c+4)), where c is self.num_classes.
+        return predict_1, predict_2, predict_3, predict_4, predict_5, predict_6
 
-        return anchors, class_preds, box_preds
