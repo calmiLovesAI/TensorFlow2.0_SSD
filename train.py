@@ -1,6 +1,6 @@
 import tensorflow as tf
 from core import ssd
-from parse_pascal_voc import ParsePascalVOC
+from core.parse_voc import ParsePascalVOC
 from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, BATCH_SIZE, \
     CHANNELS, EPOCHS, cls_loss_weight, reg_loss_weight, save_model_dir, NUM_CLASSES
 from core.label_anchors import LabelAnchors

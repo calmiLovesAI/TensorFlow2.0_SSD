@@ -69,5 +69,7 @@ class DefaultBoxes(object):
         feature_map_boxes = []
         for i in range(self.num_feature_maps):
             cx, cy, w, h = self.__generate_default_boxes_for_one_feature_map(feature_map_index=i)
+            # cx, cy: numpy ndarray, shape: (feature_map_height, feature_map_width)
+            # w, h: numpy ndarray, shape: (N, ), where N is the number of boxes for this feature map.
             feature_map_boxes.append([cx, cy, w, h])
         return feature_map_boxes
