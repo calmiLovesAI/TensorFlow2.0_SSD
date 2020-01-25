@@ -45,3 +45,8 @@ class ReadDataset(object):
             boxes_list.append(boxes)
         boxes = np.stack(boxes_list, axis=0)   # shape : (batch_size, MAX_BOXES_PER_IMAGE, 5)
         return image_name_list, boxes
+
+
+class MakeGT(object):
+    def __init__(self):
+        pass
