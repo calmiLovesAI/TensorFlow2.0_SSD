@@ -21,3 +21,17 @@ def preprocess_image(img_path):
     # resize
     img_tensor = tf.image.resize(img_tensor, [IMAGE_HEIGHT, IMAGE_WIDTH])
     return img_tensor
+
+
+def str_to_int(x):
+    return int(float(x))
+
+
+# If you resize the input image, the coordinates of boxes should also be resized.
+def resize_box(h, w, xmin, ymin, xmax, ymax):
+    resize_ratio = [IMAGE_HEIGHT / h, IMAGE_WIDTH / w]
+    xmin = int(resize_ratio[1] * xmin)
+    xmax = int(resize_ratio[1] * xmax)
+    ymin = int(resize_ratio[0] * ymin)
+    ymax = int(resize_ratio[0] * ymax)
+    return xmin, ymin, xmax, ymax

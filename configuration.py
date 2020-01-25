@@ -39,5 +39,8 @@ OBJECT_CLASSES = {"person": 1, "bird": 2, "cat": 3, "cow": 4, "dog": 5,
 TXT_DIR = "voc.txt"
 
 
+MAX_BOXES_PER_IMAGE = 20
+
+
 # directory of saving model
 save_model_dir = "saved_model"

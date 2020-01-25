@@ -2,21 +2,19 @@ import xml.dom.minidom as xdom
 from configuration import PASCAL_VOC_DIR, OBJECT_CLASSES
 import os
 
+from utils.tools import str_to_int
+
 
 class ParsePascalVOC(object):
     def __init__(self):
         self.all_xml_dir = PASCAL_VOC_DIR + "Annotations"
         self.all_image_dir = PASCAL_VOC_DIR + "JPEGImages"
 
-    @staticmethod
-    def __str_to_int(x):
-        return int(float(x))
-
     def __process_coord(self, x_min, y_min, x_max, y_max):
-        x_min = self.__str_to_int(x_min)
-        y_min = self.__str_to_int(y_min)
-        x_max = self.__str_to_int(x_max)
-        y_max = self.__str_to_int(y_max)
+        x_min = str_to_int(x_min)
+        y_min = str_to_int(y_min)
+        x_max = str_to_int(x_max)
+        y_max = str_to_int(y_max)
         return int(x_min), int(y_min), int(x_max), int(y_max)
 
     # parse one xml file
