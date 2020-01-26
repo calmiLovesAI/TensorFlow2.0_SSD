@@ -50,9 +50,9 @@ class ParsePascalVOC(object):
         return image_name, image_height, image_width, obj_and_box_list
 
     # xxx.xml image_height image_width xmin ymin xmax ymax class_type xmin ymin xmax ymax class_type ...
-    @staticmethod
-    def __combine_info(image_name, image_height, image_width, box_list):
-        line_str = image_name + " " + image_height + " " + image_width + " "
+    def __combine_info(self, image_name, image_height, image_width, box_list):
+        image_dir = self.all_image_dir + "/" + image_name
+        line_str = image_dir + " " + image_height + " " + image_width + " "
         for box in box_list:
             for item in box:
                 item_str = str(item)

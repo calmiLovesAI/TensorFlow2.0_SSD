@@ -61,8 +61,8 @@ class DefaultBoxes(object):
             h.append(s_k / math.sqrt(ar[i]))
         cx = np.array(center_x, dtype=np.float32).reshape((self.feature_map.get_height(feature_map_index), self.feature_map.get_width(feature_map_index)))
         cy = np.array(center_y, dtype=np.float32).reshape((self.feature_map.get_height(feature_map_index), self.feature_map.get_width(feature_map_index)))
-        w = np.array(w, dtype=np.float32)
-        h = np.array(h, dtype=np.float32)
+        w = np.array(w, dtype=np.float32) / self.image_width
+        h = np.array(h, dtype=np.float32) / self.image_height
         return cx, cy, w, h
 
     def generate_default_boxes(self):
@@ -71,5 +71,7 @@ class DefaultBoxes(object):
             cx, cy, w, h = self.__generate_default_boxes_for_one_feature_map(feature_map_index=i)
             # cx, cy: numpy ndarray, shape: (feature_map_height, feature_map_width)
             # w, h: numpy ndarray, shape: (N, ), where N is the number of boxes for this feature map.
-            feature_map_boxes.append([cx, cy, w, h])
+            center_xy = np.stack((cx, cy), axis=-1)  # shape: (feature_map_height, feature_map_width, 2)
+            wh = np.stack((w, h), axis=-1)  # shape: (N, 2)
+            feature_map_boxes.append([center_xy, wh])
         return feature_map_boxes

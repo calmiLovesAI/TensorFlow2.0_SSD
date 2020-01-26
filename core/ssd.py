@@ -63,5 +63,5 @@ class SSD(tf.keras.Model):
         predict_6 = self.predict_6(branch_6)
 
         # predict_i shape : (batch_size, h, w, k * (c+4)), where c is self.num_classes.
-        return predict_1, predict_2, predict_3, predict_4, predict_5, predict_6
+        return [predict_1, predict_2, predict_3, predict_4, predict_5, predict_6]
 
