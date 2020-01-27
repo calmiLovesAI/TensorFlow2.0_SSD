@@ -42,13 +42,14 @@ class DefaultBoxes(object):
         self.offset = 0.5
 
     def __generate_default_boxes_for_one_feature_map(self, feature_map_index):
+        feature_map_size = [self.feature_map.get_height(feature_map_index), self.feature_map.get_width(feature_map_index)]
         s_k = self.feature_map.get_box_scale(feature_map_index) * self.feature_map.get_downsampling_ratio(feature_map_index)
         s_k1 = self.feature_map.get_box_scale((feature_map_index + 1) % self.num_feature_maps) * self.feature_map.get_downsampling_ratio((feature_map_index + 1) % self.num_feature_maps)
         ar = self.aspect_ratios[feature_map_index]
         # The coordinates of the center point of the default box: (center_x, center_y)
-        center_x, center_y = x_y_meshgrid(x_row=self.feature_map.get_width(feature_map_index), y_col=self.feature_map.get_height(feature_map_index))
-        center_x = (center_x + self.offset) / self.feature_map.get_width(feature_map_index)
-        center_y = (center_y + self.offset) / self.feature_map.get_height(feature_map_index)
+        center_x, center_y = x_y_meshgrid(x_row=feature_map_size[1], y_col=feature_map_size[0])
+        center_x = (center_x + self.offset) / feature_map_size[1]
+        center_y = (center_y + self.offset) / feature_map_size[0]
         w = []
         h = []
         for i in range(len(ar)):
@@ -65,6 +66,17 @@ class DefaultBoxes(object):
         h = np.array(h, dtype=np.float32) / self.image_height
         return cx, cy, w, h
 
+    @staticmethod
+    def __get_default_boxes_for_single_feature(xy, wh):
+        xywh_list = []
+        for i in range(xy.shape[0]):
+            for j in range(xy.shape[1]):
+                for k in range(wh.shape[0]):
+                    xywh = np.concatenate((xy[i, j], wh[k]), axis=0)
+                    xywh_list.append(xywh)
+        default_boxes = np.stack(xywh_list, axis=0)
+        return default_boxes
+
     def generate_default_boxes(self):
         feature_map_boxes = []
         for i in range(self.num_feature_maps):
@@ -73,5 +85,6 @@ class DefaultBoxes(object):
             # w, h: numpy ndarray, shape: (N, ), where N is the number of boxes for this feature map.
             center_xy = np.stack((cx, cy), axis=-1)  # shape: (feature_map_height, feature_map_width, 2)
             wh = np.stack((w, h), axis=-1)  # shape: (N, 2)
-            feature_map_boxes.append([center_xy, wh])
-        return feature_map_boxes
+            default_boxes = self.__get_default_boxes_for_single_feature(center_xy, wh) # shape: (N * feature_map_height * feature_map_width, 4)
+            feature_map_boxes.append(default_boxes)
+        return np.concatenate(feature_map_boxes, axis=0)
