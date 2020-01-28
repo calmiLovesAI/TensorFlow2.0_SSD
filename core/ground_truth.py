@@ -116,13 +116,13 @@ class MakeGT(object):
         labeled_box_pred = np.concatenate((box_pred, pos_class_index), axis=-1)
         return labeled_box_pred
 
-    def generate_gt_boxes(self):
-        true_boxes = self.___transform_true_boxes()
-        gt_boxes_list = []
+    def generate_pred_boxes(self):
+        true_boxes = self.___transform_true_boxes()  # shape: (batch_size, MAX_BOXES_PER_IMAGE, 5)
+        pred_boxes_list = []
         for n in range(self.batch_size):
             # shape : (N, 5), where N is the number of valid true boxes for each input image.
             valid_true_boxes = self.__get_valid_boxes(true_boxes[n])
-            gt_boxes = self.__label_positive_and_negative_predicted_boxes(valid_true_boxes, self.predict_boxes)
-            gt_boxes_list.append(gt_boxes)
-        batch_gt_boxes = np.stack(gt_boxes_list, axis=0)   # shape: (batch_size, total_num_of_default_boxes, 5)
-        return batch_gt_boxes
+            pred_boxes = self.__label_positive_and_negative_predicted_boxes(valid_true_boxes, self.predict_boxes)
+            pred_boxes_list.append(pred_boxes)
+        batch_pred_boxes = np.stack(pred_boxes_list, axis=0)   # shape: (batch_size, total_num_of_default_boxes, 5)
+        return true_boxes, batch_pred_boxes
