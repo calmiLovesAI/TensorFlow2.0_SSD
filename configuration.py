@@ -8,7 +8,7 @@ CHANNELS = 3
 
 # When the iou value of the anchor and the real box is less than the IoU_threshold,
 # the anchor is divided into negative classes, otherwise positive.
-IoU_threshold = 0.6
+IOU_THRESHOLD = 0.6
 
 # generate anchor
 ASPECT_RATIOS = [[1.0, 2.0, 0.5],

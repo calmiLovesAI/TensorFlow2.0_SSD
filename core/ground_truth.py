@@ -3,7 +3,7 @@ import numpy as np
 
 from utils.IoU import IOU
 from utils.tools import str_to_int, resize_box, preprocess_image
-from configuration import MAX_BOXES_PER_IMAGE, IMAGE_WIDTH, IMAGE_HEIGHT
+from configuration import MAX_BOXES_PER_IMAGE, IMAGE_WIDTH, IMAGE_HEIGHT, IOU_THRESHOLD
 from core.anchor import DefaultBoxes
 
 
@@ -62,6 +62,7 @@ class MakeGT(object):
         self.num_predict_features = 6
         self.read_dataset = ReadDataset()
         self.default_boxes = DefaultBoxes(feature_map_list=output_features)
+        self.iou_threshold = IOU_THRESHOLD
 
         self.images, self.boxes = self.read_dataset.read(self.batch_data)
         self.predict_boxes = self.default_boxes.generate_default_boxes()
@@ -93,22 +94,35 @@ class MakeGT(object):
         valid_boxes = np.array(valid_boxes, dtype=np.float32)
         return valid_boxes
 
-    def __max_iou(self, box_true, box_pred):
+    def __label_positive_and_negative_predicted_boxes(self, box_true, box_pred):
+        box_true_coord = box_true[..., :4]
+        box_true_class = box_true[..., -1]
         iou_outside = []
-        for i in range(box_true.shape[0]):
+        for i in range(box_true_coord.shape[0]):
             iou_inside = []
             for j in range(box_pred.shape[0]):
-                iou = IOU(box_1=box_true[i], box_2=box_pred[j]).calculate_iou()
+                iou = IOU(box_1=box_true_coord[i], box_2=box_pred[j]).calculate_iou()
                 iou_inside.append(iou)
             iou_outside.append(iou_inside)
-        iou_array = np.array(iou_outside, dtype=np.float32)
-        pos_index = np.argmax(iou_array, axis=1)
-        return pos_index
+        iou_array = np.array(iou_outside, dtype=np.float32)  # shape: (num_of_true_boxes, total_num_of_default_boxes)
+        iou_max = np.max(iou_array, axis=0)
+        max_index = np.argmax(iou_array, axis=0)
+        max_index_class = np.zeros_like(max_index, dtype=np.float32)
+        for k in range(max_index.shape[0]):
+            max_index_class[k] = box_true_class[max_index[k]]
+        pos_boolean = np.where(iou_max > self.iou_threshold, 1, 0)  # 1 for positive, 0 for negative
+        pos_class_index = max_index_class * pos_boolean
+        pos_class_index = pos_class_index.reshape((-1, 1))
+        labeled_box_pred = np.concatenate((box_pred, pos_class_index), axis=-1)
+        return labeled_box_pred
 
-    def label_positive_and_negative_predicted_boxes(self):
+    def generate_gt_boxes(self):
         true_boxes = self.___transform_true_boxes()
+        gt_boxes_list = []
         for n in range(self.batch_size):
             # shape : (N, 5), where N is the number of valid true boxes for each input image.
             valid_true_boxes = self.__get_valid_boxes(true_boxes[n])
-            true_boxes_for_iou = valid_true_boxes[..., :4]
-            pos_index = self.__max_iou(true_boxes_for_iou, self.predict_boxes)
+            gt_boxes = self.__label_positive_and_negative_predicted_boxes(valid_true_boxes, self.predict_boxes)
+            gt_boxes_list.append(gt_boxes)
+        batch_gt_boxes = np.stack(gt_boxes_list, axis=0)   # shape: (batch_size, total_num_of_default_boxes, 5)
+        return batch_gt_boxes
