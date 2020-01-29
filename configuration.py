@@ -35,6 +35,11 @@ TXT_DIR = "voc.txt"
 
 MAX_BOXES_PER_IMAGE = 20
 
+# nms
+NMS_IOU_THRESHOLD = 0.5
+CONFIDENCE_THRESHOLD = 0.5
+MAX_BOX_NUM = 50
+
 
 # directory of saving model
 save_model_dir = "saved_model/"
@@ -42,3 +47,5 @@ save_model_dir = "saved_model/"
 load_weights_before_training = False
 load_weights_from_epoch = 0
 save_frequency = 5
+
+test_picture_dir = ""

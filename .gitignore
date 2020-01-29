@@ -2,7 +2,8 @@
 __pycache__
 /dataset/*
 !/dataset/README.md
-test_ssd.py
 voc.txt
 /saved_model/*
 !/saved_model/README.md
+/test_pictures/*
+!/test_pictures/README.md
