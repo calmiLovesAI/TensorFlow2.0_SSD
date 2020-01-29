@@ -49,3 +49,7 @@ load_weights_from_epoch = 0
 save_frequency = 5
 
 test_picture_dir = ""
+
+test_images_during_training = False
+training_results_save_dir = "./test_pictures/"
+test_images_dir_list = ["", ""]

@@ -1,11 +1,13 @@
 import tensorflow as tf
 
 from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS, EPOCHS, NUM_CLASSES, BATCH_SIZE, save_model_dir, \
-    load_weights_before_training, load_weights_from_epoch, save_frequency
+    load_weights_before_training, load_weights_from_epoch, save_frequency, test_images_during_training, \
+    test_images_dir_list
 from core.ground_truth import ReadDataset, MakeGT
 from core.loss import SSDLoss
 from core.make_dataset import TFDataset
 from core.ssd import SSD, ssd_prediction
+from utils.visualize import visualize_training_results
 
 
 def print_model_summary(network):
@@ -66,5 +68,8 @@ if __name__ == '__main__':
 
         if epoch % save_frequency == 0:
             ssd.save_weights(filepath=save_model_dir+"epoch-{}".format(epoch), save_format="tf")
+
+        if test_images_during_training:
+            visualize_training_results(pictures=test_images_dir_list, model=ssd, epoch=epoch)
 
     ssd.save_weights(filepath=save_model_dir+"saved_model", save_format="tf")
