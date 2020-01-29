@@ -24,7 +24,7 @@ background_sample_num = 128
 alpha = 0.25
 gamma = 2
 
-cls_loss_weight = 0.5
+
 reg_loss_weight = 0.5
 
 # dataset

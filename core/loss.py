@@ -18,4 +18,4 @@ class SSDLoss(object):
         pass
 
     def __call__(self, y_true, y_pred, *args, **kwargs):
-        pass
+        print(y_true.shape, y_pred.shape)

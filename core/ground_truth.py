@@ -56,13 +56,13 @@ class ReadDataset(object):
 
 
 class MakeGT(object):
-    def __init__(self, batch_data, output_features):
+    def __init__(self, batch_data, feature_maps):
         self.batch_data = batch_data
         self.batch_size = batch_data.shape[0]
         self.num_predict_features = 6
         self.read_dataset = ReadDataset()
-        self.default_boxes = DefaultBoxes(feature_map_list=output_features)
         self.iou_threshold = IOU_THRESHOLD
+        self.default_boxes = DefaultBoxes(feature_maps)
 
         self.images, self.boxes = self.read_dataset.read(self.batch_data)
         self.predict_boxes = self.default_boxes.generate_default_boxes()
@@ -97,6 +97,7 @@ class MakeGT(object):
     def __label_positive_and_negative_predicted_boxes(self, box_true, box_pred):
         box_true_coord = box_true[..., :4]
         box_true_class = box_true[..., -1]
+        box_pred_assigned = np.zeros_like(box_pred, dtype=np.float32)
         iou_outside = []
         for i in range(box_true_coord.shape[0]):
             iou_inside = []
@@ -110,19 +111,20 @@ class MakeGT(object):
         max_index_class = np.zeros_like(max_index, dtype=np.float32)
         for k in range(max_index.shape[0]):
             max_index_class[k] = box_true_class[max_index[k]]
+            box_pred_assigned[k] = box_true_coord[max_index[k]]
         pos_boolean = np.where(iou_max > self.iou_threshold, 1, 0)  # 1 for positive, 0 for negative
         pos_class_index = max_index_class * pos_boolean
         pos_class_index = pos_class_index.reshape((-1, 1))
-        labeled_box_pred = np.concatenate((box_pred, pos_class_index), axis=-1)
+        labeled_box_pred = np.concatenate((box_pred_assigned, pos_class_index), axis=-1)
         return labeled_box_pred
 
-    def generate_pred_boxes(self):
+    def generate_gt_boxes(self):
         true_boxes = self.___transform_true_boxes()  # shape: (batch_size, MAX_BOXES_PER_IMAGE, 5)
-        pred_boxes_list = []
+        gt_boxes_list = []
         for n in range(self.batch_size):
             # shape : (N, 5), where N is the number of valid true boxes for each input image.
             valid_true_boxes = self.__get_valid_boxes(true_boxes[n])
-            pred_boxes = self.__label_positive_and_negative_predicted_boxes(valid_true_boxes, self.predict_boxes)
-            pred_boxes_list.append(pred_boxes)
-        batch_pred_boxes = np.stack(pred_boxes_list, axis=0)   # shape: (batch_size, total_num_of_default_boxes, 5)
-        return true_boxes, batch_pred_boxes
+            gt_boxes = self.__label_positive_and_negative_predicted_boxes(valid_true_boxes, self.predict_boxes)
+            gt_boxes_list.append(gt_boxes)
+        batch_gt_boxes = np.stack(gt_boxes_list, axis=0)   # shape: (batch_size, total_num_of_default_boxes, 5)
+        return batch_gt_boxes

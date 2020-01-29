@@ -65,3 +65,11 @@ class SSD(tf.keras.Model):
         # predict_i shape : (batch_size, h, w, k * (c+4)), where c is self.num_classes.
         return [predict_1, predict_2, predict_3, predict_4, predict_5, predict_6]
 
+
+def ssd_output(feature_maps, num_classes):
+    batch_size = feature_maps[0].shape[0]
+    output_features_list = []
+    for feature in feature_maps:
+        output_features_list.append(tf.reshape(tensor=feature, shape=(batch_size, -1, num_classes + 4)))
+    output_features = tf.concat(values=output_features_list, axis=1)
+    return output_features
