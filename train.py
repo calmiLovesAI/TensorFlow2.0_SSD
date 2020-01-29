@@ -1,82 +1,58 @@
 import tensorflow as tf
-from core import ssd
-from core.parse_voc import ParsePascalVOC
-from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, BATCH_SIZE, \
-    CHANNELS, EPOCHS, cls_loss_weight, reg_loss_weight, save_model_dir, NUM_CLASSES
-from core.label_anchors import LabelAnchors
-from core.loss import SmoothL1Loss
-import math
+
+from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS, EPOCHS, NUM_CLASSES, BATCH_SIZE
+from core.ground_truth import ReadDataset, MakeGT
+from core.loss import SSDLoss
+from core.make_dataset import TFDataset
+from core.ssd import SSD, ssd_output
+
+
+def print_model_summary(network):
+    network.build(input_shape=(None, IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS))
+    network.summary()
+
 
 if __name__ == '__main__':
     # GPU settings
-    gpus = tf.config.experimental.list_physical_devices('GPU')
+    gpus = tf.config.list_physical_devices("GPU")
     if gpus:
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
 
-    # get datasets
-    parse = ParsePascalVOC()
-    train_dataset, test_dataset, train_count, test_count = parse.split_dataset()
+    dataset = TFDataset()
+    train_data, train_count = dataset.generate_datatset()
 
-    # initialize model
-    model = ssd.SSD()
-    model.build(input_shape=(None, IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS))
-    model.summary()
-
-    # metrics
-    train_class_metric = tf.keras.metrics.Accuracy()
-    train_box_metric = tf.keras.metrics.MeanAbsoluteError()
-    test_class_metric = tf.keras.metrics.Accuracy()
-    test_box_metric = tf.keras.metrics.MeanAbsoluteError()
-
-    # optimizer
-    optimizer = tf.keras.optimizers.Adadelta()
+    ssd = SSD()
+    print_model_summary(network=ssd)
 
     # loss
-    train_cls_loss = tf.keras.losses.CategoricalCrossentropy()
-    # train_reg_loss = SmoothL1Loss()
-    calculate_train_loss = tf.keras.metrics.Mean()
-    test_cls_loss = tf.keras.losses.CategoricalCrossentropy()
-    # test_reg_loss = SmoothL1Loss()
-    calculate_test_loss = tf.keras.metrics.Mean()
+    loss = SSDLoss()
 
-    # @tf.function
-    def train_step(images, labels):
+    # optimizer
+    optimizer = tf.optimizers.Adadelta()
+
+    # metrics
+    loss_metric = tf.metrics.Mean()
+
+    def train_step(batch_images, batch_labels):
         with tf.GradientTape() as tape:
-            anchors, class_preds, box_preds = model(images)
-            label_anchors = LabelAnchors(anchors=anchors, labels=labels, class_preds=class_preds)
-            box_target, box_mask, cls_target = label_anchors.get_results()
-            # print("class_preds = {}".format(class_preds))
-            # print(class_preds.shape)
-            # print("cls_target = {}".format(cls_target))
-            # print(cls_target.shape)
-            cls_target = tf.dtypes.cast(cls_target, tf.int32)
-            cls_target_onehot = tf.one_hot(indices=cls_target, depth=NUM_CLASSES + 1)
-            cls_loss = train_cls_loss(y_pred=class_preds, y_true=cls_target_onehot)
-            train_reg_loss = SmoothL1Loss(mask=box_mask)
-            reg_loss = train_reg_loss(box_target, box_preds)
-            loss = cls_loss_weight * cls_loss + reg_loss_weight * reg_loss
-        gradients = tape.gradient(loss, model.trainable_variables)
-        optimizer.apply_gradients(grads_and_vars=zip(gradients, model.trainable_variables))
-
-        calculate_train_loss(loss)
-        class_preds_argmax = tf.math.argmax(class_preds, axis=-1)
-        train_class_metric.update_state(y_true=cls_target, y_pred=class_preds_argmax)
-        train_box_metric.update_state(y_true=box_target, y_pred=box_preds * box_mask)
+            pred = ssd(batch_images, training=True)
+            output = ssd_output(feature_maps=pred, num_classes=NUM_CLASSES + 1)
+            gt = MakeGT(batch_labels, pred)
+            gt_boxes = gt.generate_gt_boxes()
+            loss_value = loss(y_true=gt_boxes, y_pred=output)
+        gradients = tape.gradient(loss_value, ssd.trainable_variables)
+        optimizer.apply_gradients(grads_and_vars=zip(gradients, ssd.trainable_variables))
+        loss_metric.update_state(values=loss_value)
 
 
     for epoch in range(EPOCHS):
-        step = 0
-        for images, labels in train_dataset:
-            step += 1
-            train_step(images, labels)
-            print("Epoch: {}/{}, step: {}/{}, loss: {:.5f}, accuracy: {:.5f}, mse: {:.5f}".format(epoch + 1,
-                                                                                                  EPOCHS,
-                                                                                                  step,
-                                                                                                  math.ceil(train_count / BATCH_SIZE),
-                                                                                                  calculate_train_loss.result(),
-                                                                                                  train_class_metric.result(),
-                                                                                                  train_box_metric.result()))
-
-
-    tf.saved_model.save(model, save_model_dir)
+        for step, batch_data in enumerate(train_data):
+            images, labels = ReadDataset().read(batch_data)
+            train_step(batch_images=images, batch_labels=labels)
+            print("Epoch: {}/{}, step: {}/{}, loss: {:.9f}".format(epoch,
+                                                                   EPOCHS,
+                                                                   step,
+                                                                   tf.math.ceil(train_count / BATCH_SIZE),
+                                                                   loss_metric.result()))
+        loss_metric.reset_states()

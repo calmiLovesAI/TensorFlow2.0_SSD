@@ -35,8 +35,8 @@ class SSDLoss(object):
     def __call__(self, y_true, y_pred, *args, **kwargs):
         # y_true : tensor, shape: (batch_size, total_num_of_default_boxes, 5)
         # y_pred : tensor, shape: (batch_size, total_num_of_default_boxes, 25)
-        true_class = tf.cast(x=y_true[..., -1], dtype=tf.dtypes.int32)  # (8, 8732, )
-        pred_class = y_pred[..., :21]   # (8, 8732, 21)
+        true_class = tf.cast(x=y_true[..., -1], dtype=tf.dtypes.int32)
+        pred_class = y_pred[..., :21]
         class_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_class, logits=pred_class)
         class_loss_value = tf.math.reduce_mean(class_loss)
 

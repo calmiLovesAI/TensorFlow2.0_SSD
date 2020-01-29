@@ -56,15 +56,14 @@ class ReadDataset(object):
 
 
 class MakeGT(object):
-    def __init__(self, batch_data, feature_maps):
-        self.batch_data = batch_data
-        self.batch_size = batch_data.shape[0]
+    def __init__(self, batch_label, feature_maps):
+        self.batch_size = batch_label.shape[0]
         self.num_predict_features = 6
         self.read_dataset = ReadDataset()
         self.iou_threshold = IOU_THRESHOLD
         self.default_boxes = DefaultBoxes(feature_maps)
 
-        self.images, self.boxes = self.read_dataset.read(self.batch_data)
+        self.boxes = batch_label
         self.predict_boxes = self.default_boxes.generate_default_boxes()
 
     def ___transform_true_boxes(self):
