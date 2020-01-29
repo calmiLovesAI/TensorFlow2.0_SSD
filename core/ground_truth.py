@@ -127,4 +127,4 @@ class MakeGT(object):
             gt_boxes = self.__label_positive_and_negative_predicted_boxes(valid_true_boxes, self.predict_boxes)
             gt_boxes_list.append(gt_boxes)
         batch_gt_boxes = np.stack(gt_boxes_list, axis=0)   # shape: (batch_size, total_num_of_default_boxes, 5)
-        return batch_gt_boxes
+        return tf.convert_to_tensor(value=batch_gt_boxes, dtype=tf.dtypes.float32)

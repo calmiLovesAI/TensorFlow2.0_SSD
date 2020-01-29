@@ -18,12 +18,6 @@ ASPECT_RATIOS = [[1.0, 2.0, 0.5],
                  [1.0, 2.0, 0.5],
                  [1.0, 2.0, 0.5]]
 
-background_sample_num = 128
-
-# focal loss
-alpha = 0.25
-gamma = 2
-
 
 reg_loss_weight = 0.5
 
