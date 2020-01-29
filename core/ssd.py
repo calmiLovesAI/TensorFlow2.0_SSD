@@ -66,7 +66,7 @@ class SSD(tf.keras.Model):
         return [predict_1, predict_2, predict_3, predict_4, predict_5, predict_6]
 
 
-def ssd_output(feature_maps, num_classes):
+def ssd_prediction(feature_maps, num_classes):
     batch_size = feature_maps[0].shape[0]
     output_features_list = []
     for feature in feature_maps:

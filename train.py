@@ -5,7 +5,7 @@ from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS, EPOCHS, NUM_CLASS
 from core.ground_truth import ReadDataset, MakeGT
 from core.loss import SSDLoss
 from core.make_dataset import TFDataset
-from core.ssd import SSD, ssd_output
+from core.ssd import SSD, ssd_prediction
 
 
 def print_model_summary(network):
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     def train_step(batch_images, batch_labels):
         with tf.GradientTape() as tape:
             pred = ssd(batch_images, training=True)
-            output = ssd_output(feature_maps=pred, num_classes=NUM_CLASSES + 1)
+            output = ssd_prediction(feature_maps=pred, num_classes=NUM_CLASSES + 1)
             gt = MakeGT(batch_labels, pred)
             gt_boxes = gt.generate_gt_boxes()
             loss_value = loss(y_true=gt_boxes, y_pred=output)
