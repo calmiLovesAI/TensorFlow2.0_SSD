@@ -37,4 +37,8 @@ MAX_BOXES_PER_IMAGE = 20
 
 
 # directory of saving model
-save_model_dir = "saved_model"
+save_model_dir = "saved_model/"
+
+load_weights_before_training = False
+load_weights_from_epoch = 0
+save_frequency = 5
