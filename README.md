@@ -33,4 +33,5 @@ A tensorflow_2.0 implementation of SSD (Single Shot MultiBox Detector) .
 
 ## References
 + The paper: [SSD: Single Shot MultiBox Detector](https://arxiv.org/abs/1512.02325)
++ [focal_loss implemented in TensorFlow_Addons](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/losses/focal_loss.py)
 
