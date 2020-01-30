@@ -6,6 +6,16 @@ IMAGE_HEIGHT = 300
 IMAGE_WIDTH = 300
 CHANNELS = 3
 
+load_weights_before_training = False
+load_weights_from_epoch = 0
+save_frequency = 5
+
+test_picture_dir = ""
+
+test_images_during_training = False
+training_results_save_dir = "./test_pictures/"
+test_images_dir_list = ["", ""]
+
 # When the iou value of the anchor and the real box is less than the IoU_threshold,
 # the anchor is divided into negative classes, otherwise positive.
 IOU_THRESHOLD = 0.6
@@ -47,12 +57,3 @@ MAX_BOX_NUM = 50
 # directory of saving model
 save_model_dir = "saved_model/"
 
-load_weights_before_training = False
-load_weights_from_epoch = 0
-save_frequency = 5
-
-test_picture_dir = ""
-
-test_images_during_training = False
-training_results_save_dir = "./test_pictures/"
-test_images_dir_list = ["", ""]
