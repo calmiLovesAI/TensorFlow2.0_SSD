@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
-from configuration import reg_loss_weight, NUM_CLASSES
+from configuration import reg_loss_weight, NUM_CLASSES, alpha, gamma
+from utils.focal_loss import sigmoid_focal_loss
 
 
 class SmoothL1Loss(object):
@@ -38,8 +39,8 @@ class SSDLoss(object):
         # y_pred : tensor, shape: (batch_size, total_num_of_default_boxes, 25)
         true_class = tf.cast(x=y_true[..., -1], dtype=tf.dtypes.int32)
         pred_class = y_pred[..., :self.num_classes]
-        class_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_class, logits=pred_class)
-        class_loss_value = tf.math.reduce_mean(class_loss)
+        true_class = tf.one_hot(indices=true_class, depth=self.num_classes, axis=-1)
+        class_loss_value = tf.math.reduce_mean(sigmoid_focal_loss(y_true=true_class, y_pred=pred_class, alpha=alpha, gamma=gamma))
 
         cover_boxes = self.__cover_background_boxes(true_boxes=y_true)
         true_coord = y_true[..., :4] * cover_boxes
