@@ -19,7 +19,7 @@ def find_class_name(class_id):
 def draw_boxes_on_image(image, boxes, scores, classes):
     num_boxes = boxes.shape[0]
     for i in range(num_boxes):
-        class_and_score = str(find_class_name(classes[i] + 1)) + ": " + str(scores[i].numpy())
+        class_and_score = str(find_class_name(classes[i])) + ": " + str(scores[i].numpy())
         cv2.rectangle(img=image, pt1=(boxes[i, 0], boxes[i, 1]), pt2=(boxes[i, 2], boxes[i, 3]), color=(255, 0, 0), thickness=2)
         cv2.putText(img=image, text=class_and_score, org=(boxes[i, 0], boxes[i, 1] - 10), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=1.5, color=(0, 255, 255), thickness=2)
     return image
@@ -42,7 +42,7 @@ if __name__ == '__main__':
             tf.config.experimental.set_memory_growth(gpu, True)
 
     ssd_model = SSD()
-    # ssd_model.load_weights(filepath=save_model_dir+"saved_model")
+    ssd_model.load_weights(filepath=save_model_dir+"saved_model")
 
     image = test_single_picture(picture_dir=test_picture_dir, model=ssd_model)
 

@@ -30,8 +30,19 @@ class InferenceProcedure(object):
         resized_boxes = tf.stack(values=[xmin, ymin, xmax, ymax], axis=-1)
         return resized_boxes
 
+    def __filter_background_boxes(self, ssd_predict_boxes):
+        num_of_total_predict_boxes = ssd_predict_boxes.shape[1]
+        scores = tf.argmax(input=tf.nn.softmax(ssd_predict_boxes[..., :self.num_classes]), axis=-1)
+        filtered_boxes_list = []
+        for i in range(num_of_total_predict_boxes):
+            if scores[:, i] != 0:
+                filtered_boxes_list.append(ssd_predict_boxes[:, i, :])
+        filtered_boxes = tf.stack(values=filtered_boxes_list, axis=1)
+        return filtered_boxes
+
     def get_final_boxes(self, image):
         pred_boxes = self.__get_ssd_prediction(image)
+        pred_boxes = self.__filter_background_boxes(pred_boxes)
         pred_boxes_class = tf.nn.softmax(logits=pred_boxes[..., :self.num_classes])
         pred_boxes_class = tf.reshape(tensor=pred_boxes_class, shape=(-1, self.num_classes))
         pred_boxes_coord = pred_boxes[..., self.num_classes:]
