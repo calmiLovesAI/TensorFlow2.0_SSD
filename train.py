@@ -1,4 +1,5 @@
 import tensorflow as tf
+import time
 
 from configuration import IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS, EPOCHS, NUM_CLASSES, BATCH_SIZE, save_model_dir, \
     load_weights_before_training, load_weights_from_epoch, save_frequency, test_images_during_training, \
@@ -57,13 +58,16 @@ if __name__ == '__main__':
 
     for epoch in range(load_weights_from_epoch + 1, EPOCHS):
         for step, batch_data in enumerate(train_data):
+            start_time = time.time()
             images, labels = ReadDataset().read(batch_data)
             train_step(batch_images=images, batch_labels=labels)
-            print("Epoch: {}/{}, step: {}/{}, loss: {:.9f}".format(epoch,
-                                                                   EPOCHS,
-                                                                   step,
-                                                                   tf.math.ceil(train_count / BATCH_SIZE),
-                                                                   loss_metric.result()))
+            spent_time = time.time() - start_time
+            print("Epoch: {}/{}, step: {}/{}, time spent: {:.2f}s, loss: {:.9f}".format(epoch,
+                                                                                    EPOCHS,
+                                                                                    step,
+                                                                                    tf.math.ceil(train_count / BATCH_SIZE),
+                                                                                    spent_time,
+                                                                                    loss_metric.result()))
         loss_metric.reset_states()
 
         if epoch % save_frequency == 0:

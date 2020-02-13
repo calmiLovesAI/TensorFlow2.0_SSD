@@ -1,5 +1,5 @@
 import tensorflow as tf
-import numpy as np
+
 from configuration import reg_loss_weight, NUM_CLASSES, alpha, gamma
 from utils.focal_loss import sigmoid_focal_loss
 
@@ -25,13 +25,10 @@ class SSDLoss(object):
 
     @staticmethod
     def __cover_background_boxes(true_boxes):
-        batch_size, total_num_of_boxes, _ = true_boxes.shape
-        cover_boxes = np.ones_like(true_boxes, dtype=np.float32)
-        for b in range(batch_size):
-            for t in range(total_num_of_boxes):
-                if true_boxes[b, t, -1] == 0.0:
-                    cover_boxes[b, t, :] = np.zeros_like(true_boxes[b, t, :], dtype=np.float32)
-        cover_boxes_tensor = tf.convert_to_tensor(value=cover_boxes[..., :4], dtype=tf.dtypes.float32)
+        symbol = true_boxes[..., -1]
+        mask_symbol = tf.where(symbol < 0.5, 0.0, 1.0)
+        mask_symbol = tf.expand_dims(input=mask_symbol, axis=-1)
+        cover_boxes_tensor = tf.tile(input=mask_symbol, multiples=tf.constant([1, 1, 4], dtype=tf.dtypes.int32))
         return cover_boxes_tensor
 
     def __call__(self, y_true, y_pred, *args, **kwargs):
