@@ -41,8 +41,8 @@ class SSDLoss(object):
 
         cover_boxes = self.__cover_background_boxes(true_boxes=y_true)
         true_coord = y_true[..., :4] * cover_boxes
-        pred_coord = tf.math.sigmoid(y_pred[..., self.num_classes:] * cover_boxes)
+        pred_coord = y_pred[..., self.num_classes:] * cover_boxes
         reg_loss_value = self.smooth_l1_loss(y_true=true_coord, y_pred=pred_coord)
 
         loss = self.cls_loss_weight * class_loss_value + self.reg_loss_weight * reg_loss_value
-        return loss
+        return loss, class_loss_value, reg_loss_value

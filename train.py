@@ -43,6 +43,8 @@ if __name__ == '__main__':
 
     # metrics
     loss_metric = tf.metrics.Mean()
+    cls_loss_metric = tf.metrics.Mean()
+    reg_loss_metric = tf.metrics.Mean()
 
     def train_step(batch_images, batch_labels):
         with tf.GradientTape() as tape:
@@ -50,10 +52,12 @@ if __name__ == '__main__':
             output = ssd_prediction(feature_maps=pred, num_classes=NUM_CLASSES + 1)
             gt = MakeGT(batch_labels, pred)
             gt_boxes = gt.generate_gt_boxes()
-            loss_value = loss(y_true=gt_boxes, y_pred=output)
+            loss_value, cls_loss, reg_loss = loss(y_true=gt_boxes, y_pred=output)
         gradients = tape.gradient(loss_value, ssd.trainable_variables)
         optimizer.apply_gradients(grads_and_vars=zip(gradients, ssd.trainable_variables))
         loss_metric.update_state(values=loss_value)
+        cls_loss_metric.update_state(values=cls_loss)
+        reg_loss_metric.update_state(values=reg_loss)
 
 
     for epoch in range(load_weights_from_epoch + 1, EPOCHS):
@@ -62,13 +66,18 @@ if __name__ == '__main__':
             images, labels = ReadDataset().read(batch_data)
             train_step(batch_images=images, batch_labels=labels)
             spent_time = time.time() - start_time
-            print("Epoch: {}/{}, step: {}/{}, time spent: {:.2f}s, loss: {:.9f}".format(epoch,
-                                                                                    EPOCHS,
-                                                                                    step,
-                                                                                    tf.math.ceil(train_count / BATCH_SIZE),
-                                                                                    spent_time,
-                                                                                    loss_metric.result()))
+            print("Epoch: {}/{}, step: {}/{}, time spent: {:.2f}s, loss: {:.5f}, "
+                  "cls loss: {:.5f}, reg loss: {:.5f}".format(epoch,
+                                                              EPOCHS,
+                                                              step,
+                                                              tf.math.ceil(train_count / BATCH_SIZE),
+                                                              spent_time,
+                                                              loss_metric.result(),
+                                                              cls_loss_metric.result(),
+                                                              reg_loss_metric.result()))
         loss_metric.reset_states()
+        cls_loss_metric.reset_states()
+        reg_loss_metric.reset_states()
 
         if epoch % save_frequency == 0:
             ssd.save_weights(filepath=save_model_dir+"epoch-{}".format(epoch), save_format="tf")
