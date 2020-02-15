@@ -45,7 +45,7 @@ class InferenceProcedure(object):
         pred_boxes = self.__filter_background_boxes(pred_boxes)
         pred_boxes_class = tf.nn.softmax(logits=pred_boxes[..., :self.num_classes])
         pred_boxes_class = tf.reshape(tensor=pred_boxes_class, shape=(-1, self.num_classes))
-        pred_boxes_coord = pred_boxes[..., self.num_classes:]
+        pred_boxes_coord = tf.math.sigmoid(pred_boxes[..., self.num_classes:])
         pred_boxes_coord = tf.reshape(tensor=pred_boxes_coord, shape=(-1, 4))
         resized_pred_boxes = self.__resize_boxes(boxes=pred_boxes_coord,
                                                  image_height=image.shape[1],

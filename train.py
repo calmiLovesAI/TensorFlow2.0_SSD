@@ -39,7 +39,7 @@ if __name__ == '__main__':
     loss = SSDLoss()
 
     # optimizer
-    optimizer = tf.optimizers.Adadelta()
+    optimizer = tf.optimizers.Adam(learning_rate=0.001)
 
     # metrics
     loss_metric = tf.metrics.Mean()

@@ -33,15 +33,15 @@ class SSDLoss(object):
 
     def __call__(self, y_true, y_pred, *args, **kwargs):
         # y_true : tensor, shape: (batch_size, total_num_of_default_boxes, 5)
-        # y_pred : tensor, shape: (batch_size, total_num_of_default_boxes, 25)
+        # y_pred : tensor, shape: (batch_size, total_num_of_default_boxes, NUM_CLASSES + 5)
         true_class = tf.cast(x=y_true[..., -1], dtype=tf.dtypes.int32)
         pred_class = y_pred[..., :self.num_classes]
         true_class = tf.one_hot(indices=true_class, depth=self.num_classes, axis=-1)
-        class_loss_value = tf.math.reduce_mean(sigmoid_focal_loss(y_true=true_class, y_pred=pred_class, alpha=alpha, gamma=gamma))
+        class_loss_value = tf.math.reduce_sum(sigmoid_focal_loss(y_true=true_class, y_pred=pred_class, alpha=alpha, gamma=gamma))
 
         cover_boxes = self.__cover_background_boxes(true_boxes=y_true)
         true_coord = y_true[..., :4] * cover_boxes
-        pred_coord = y_pred[..., self.num_classes:] * cover_boxes
+        pred_coord = tf.math.sigmoid(y_pred[..., self.num_classes:] * cover_boxes)
         reg_loss_value = self.smooth_l1_loss(y_true=true_coord, y_pred=pred_coord)
 
         loss = self.cls_loss_weight * class_loss_value + self.reg_loss_weight * reg_loss_value
