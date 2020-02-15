@@ -110,7 +110,6 @@ class MakeGT(object):
         max_index_class = np.zeros_like(max_index, dtype=np.float32)
         for k in range(max_index.shape[0]):
             max_index_class[k] = box_true_class[max_index[k]]
-            # box_pred_assigned[k] = box_true_coord[max_index[k]]
             box_pred_assigned[k] = self.__get_offset(box_true=box_true_coord[max_index[k]], box_pred=box_pred[k])
         pos_boolean = np.where(iou_max > self.iou_threshold, 1.0, 0.0)  # 1 for positive, 0 for negative
         pos_class_index = max_index_class * pos_boolean
