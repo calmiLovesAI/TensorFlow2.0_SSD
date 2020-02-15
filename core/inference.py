@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from configuration import NUM_CLASSES, IMAGE_HEIGHT, IMAGE_WIDTH
+from core.anchor import DefaultBoxes
 from core.ssd import ssd_prediction
 from utils.nms import NMS
 
@@ -15,7 +16,7 @@ class InferenceProcedure(object):
     def __get_ssd_prediction(self, image):
         output = self.model(image, training=False)
         pred = ssd_prediction(feature_maps=output, num_classes=self.num_classes)
-        return pred
+        return pred, output
 
     @staticmethod
     def __resize_boxes(boxes, image_height, image_width):
@@ -40,12 +41,28 @@ class InferenceProcedure(object):
         filtered_boxes = tf.stack(values=filtered_boxes_list, axis=1)
         return filtered_boxes
 
+    def __offsets_to_true_coordinates(self, pred_boxes, ssd_output):
+        pred_classes = tf.reshape(tensor=pred_boxes[..., :self.num_classes], shape=(-1, self.num_classes))
+        pred_coords = tf.reshape(tensor=pred_boxes[..., self.num_classes:], shape=(-1, 4))
+        default_boxes = DefaultBoxes(feature_map_list=ssd_output).generate_default_boxes()
+        d_cx, d_cy, d_w, d_h = default_boxes[:, 0:1], default_boxes[:, 1:2], default_boxes[:, 2:3], default_boxes[:, 3:4]
+        offset_cx, offset_cy, offset_w, offset_h = pred_coords[:, 0:1], pred_coords[:, 1:2], pred_coords[:, 2:3], pred_coords[:, 3:4]
+        true_cx = offset_cx * d_w + d_cx
+        true_cy = offset_cy * d_h + d_cy
+        true_w = tf.math.exp(offset_w) * d_w
+        true_h = tf.math.exp(offset_h) * d_h
+        true_coords = tf.concat(values=[true_cx, true_cy, true_w, true_h], axis=-1)
+        true_classes_and_coords = tf.concat(values=[pred_classes, true_coords], axis=-1)
+        true_classes_and_coords = tf.expand_dims(input=true_classes_and_coords, axis=0)
+        return true_classes_and_coords
+
     def get_final_boxes(self, image):
-        pred_boxes = self.__get_ssd_prediction(image)
-        pred_boxes = self.__filter_background_boxes(pred_boxes)
-        pred_boxes_class = tf.nn.softmax(logits=pred_boxes[..., :self.num_classes])
+        pred_boxes, ssd_output = self.__get_ssd_prediction(image)
+        pred_boxes = self.__offsets_to_true_coordinates(pred_boxes=pred_boxes, ssd_output=ssd_output)
+        filtered_pred_boxes = self.__filter_background_boxes(pred_boxes)
+        pred_boxes_class = tf.nn.softmax(logits=filtered_pred_boxes[..., :self.num_classes])
         pred_boxes_class = tf.reshape(tensor=pred_boxes_class, shape=(-1, self.num_classes))
-        pred_boxes_coord = pred_boxes[..., self.num_classes:]
+        pred_boxes_coord = filtered_pred_boxes[..., self.num_classes:]
         pred_boxes_coord = tf.reshape(tensor=pred_boxes_coord, shape=(-1, 4))
         resized_pred_boxes = self.__resize_boxes(boxes=pred_boxes_coord,
                                                  image_height=image.shape[1],
