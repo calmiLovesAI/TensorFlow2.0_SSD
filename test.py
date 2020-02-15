@@ -29,8 +29,11 @@ def test_single_picture(picture_dir, model):
     image_tensor = preprocess_image(picture_dir)
     image_tensor = tf.expand_dims(image_tensor, axis=0)
     procedure = InferenceProcedure(model=model)
-    boxes, scores, classes = procedure.get_final_boxes(image=image_tensor)
-    image_with_boxes = draw_boxes_on_image(cv2.imread(picture_dir), boxes, scores, classes)
+    is_object_exist, boxes, scores, classes = procedure.get_final_boxes(image=image_tensor)
+    if is_object_exist:
+        image_with_boxes = draw_boxes_on_image(cv2.imread(picture_dir), boxes, scores, classes)
+    else:
+        image_with_boxes = cv2.imread(picture_dir)
     return image_with_boxes
 
 

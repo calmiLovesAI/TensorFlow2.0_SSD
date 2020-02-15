@@ -32,14 +32,20 @@ class InferenceProcedure(object):
         return resized_boxes
 
     def __filter_background_boxes(self, ssd_predict_boxes):
+        is_object_exist = True
         num_of_total_predict_boxes = ssd_predict_boxes.shape[1]
-        scores = tf.argmax(input=tf.nn.softmax(ssd_predict_boxes[..., :self.num_classes]), axis=-1)
+        scores = tf.nn.softmax(ssd_predict_boxes[..., :self.num_classes])
+        classes = tf.math.argmax(input=scores, axis=-1)
         filtered_boxes_list = []
         for i in range(num_of_total_predict_boxes):
-            if scores[:, i] != 0:
+            if classes[:, i] != 0:
                 filtered_boxes_list.append(ssd_predict_boxes[:, i, :])
-        filtered_boxes = tf.stack(values=filtered_boxes_list, axis=1)
-        return filtered_boxes
+        if filtered_boxes_list:
+            filtered_boxes = tf.stack(values=filtered_boxes_list, axis=1)
+            return is_object_exist, filtered_boxes, scores
+        else:
+            is_object_exist = False
+            return is_object_exist, ssd_predict_boxes, scores
 
     def __offsets_to_true_coordinates(self, pred_boxes, ssd_output):
         pred_classes = tf.reshape(tensor=pred_boxes[..., :self.num_classes], shape=(-1, self.num_classes))
@@ -59,14 +65,16 @@ class InferenceProcedure(object):
     def get_final_boxes(self, image):
         pred_boxes, ssd_output = self.__get_ssd_prediction(image)
         pred_boxes = self.__offsets_to_true_coordinates(pred_boxes=pred_boxes, ssd_output=ssd_output)
-        filtered_pred_boxes = self.__filter_background_boxes(pred_boxes)
-        pred_boxes_class = tf.nn.softmax(logits=filtered_pred_boxes[..., :self.num_classes])
-        pred_boxes_class = tf.reshape(tensor=pred_boxes_class, shape=(-1, self.num_classes))
-        pred_boxes_coord = filtered_pred_boxes[..., self.num_classes:]
-        pred_boxes_coord = tf.reshape(tensor=pred_boxes_coord, shape=(-1, 4))
-        resized_pred_boxes = self.__resize_boxes(boxes=pred_boxes_coord,
-                                                 image_height=image.shape[1],
-                                                 image_width=image.shape[2])
-        box_tensor, score_tensor, class_tensor = self.nms_op.nms(boxes=resized_pred_boxes, box_scores=pred_boxes_class)
-        return box_tensor, score_tensor, class_tensor
-
+        is_object_exist, filtered_pred_boxes, pred_boxes_class = self.__filter_background_boxes(pred_boxes)
+        if is_object_exist:
+            pred_boxes_class = tf.reshape(tensor=pred_boxes_class, shape=(-1, self.num_classes))
+            pred_boxes_coord = filtered_pred_boxes[..., self.num_classes:]
+            pred_boxes_coord = tf.reshape(tensor=pred_boxes_coord, shape=(-1, 4))
+            resized_pred_boxes = self.__resize_boxes(boxes=pred_boxes_coord,
+                                                     image_height=image.shape[1],
+                                                     image_width=image.shape[2])
+            box_tensor, score_tensor, class_tensor = self.nms_op.nms(boxes=resized_pred_boxes,
+                                                                     box_scores=pred_boxes_class)
+            return is_object_exist, box_tensor, score_tensor, class_tensor
+        else:
+            return is_object_exist, tf.zeros(shape=(1, 4)), tf.zeros(shape=(1,)), tf.zeros(shape=(1,))
