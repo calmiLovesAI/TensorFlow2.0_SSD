@@ -33,6 +33,7 @@ def test_single_picture(picture_dir, model):
     if is_object_exist:
         image_with_boxes = draw_boxes_on_image(cv2.imread(picture_dir), boxes, scores, classes)
     else:
+        print("No objects were detected.")
         image_with_boxes = cv2.imread(picture_dir)
     return image_with_boxes
 

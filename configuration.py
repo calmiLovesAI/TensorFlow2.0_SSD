@@ -32,7 +32,7 @@ ASPECT_RATIOS = [[1.0, 2.0, 0.5],
 alpha = 0.25
 gamma = 2.0
 
-reg_loss_weight = 0.9
+reg_loss_weight = 0.5
 
 # dataset
 PASCAL_VOC_DIR = "./dataset/VOCdevkit/VOC2012/"
