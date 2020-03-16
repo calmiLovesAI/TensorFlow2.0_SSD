@@ -34,7 +34,8 @@ class InferenceProcedure(object):
     def __filter_background_boxes(self, ssd_predict_boxes):
         is_object_exist = True
         num_of_total_predict_boxes = ssd_predict_boxes.shape[1]
-        scores = tf.nn.softmax(ssd_predict_boxes[..., :self.num_classes])
+        # scores = tf.nn.softmax(ssd_predict_boxes[..., :self.num_classes])
+        scores = ssd_predict_boxes[..., :self.num_classes]
         classes = tf.math.argmax(input=scores, axis=-1)
         filtered_boxes_list = []
         for i in range(num_of_total_predict_boxes):
@@ -67,7 +68,8 @@ class InferenceProcedure(object):
         pred_boxes = self.__offsets_to_true_coordinates(pred_boxes=pred_boxes, ssd_output=ssd_output)
         is_object_exist, filtered_pred_boxes = self.__filter_background_boxes(pred_boxes)
         if is_object_exist:
-            scores = tf.nn.softmax(filtered_pred_boxes[..., :self.num_classes])
+            # scores = tf.nn.softmax(filtered_pred_boxes[..., :self.num_classes])
+            scores = filtered_pred_boxes[..., :self.num_classes]
             pred_boxes_scores = tf.reshape(tensor=scores, shape=(-1, self.num_classes))
             pred_boxes_coord = filtered_pred_boxes[..., self.num_classes:]
             pred_boxes_coord = tf.reshape(tensor=pred_boxes_coord, shape=(-1, 4))
