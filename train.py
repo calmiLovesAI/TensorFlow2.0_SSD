@@ -39,7 +39,10 @@ if __name__ == '__main__':
     loss = SSDLoss()
 
     # optimizer
-    optimizer = tf.optimizers.Adam(learning_rate=0.001)
+    lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate=1e-3,
+                                                                 decay_steps=20000,
+                                                                 decay_rate=0.96)
+    optimizer = tf.optimizers.Adam(learning_rate=lr_schedule)
 
     # metrics
     loss_metric = tf.metrics.Mean()
@@ -61,17 +64,17 @@ if __name__ == '__main__':
 
 
     for epoch in range(load_weights_from_epoch + 1, EPOCHS):
+        start_time = time.time()
         for step, batch_data in enumerate(train_data):
-            start_time = time.time()
             images, labels = ReadDataset().read(batch_data)
             train_step(batch_images=images, batch_labels=labels)
-            spent_time = time.time() - start_time
-            print("Epoch: {}/{}, step: {}/{}, time spent: {:.2f}s, loss: {:.5f}, "
+            time_per_step = (time.time() - start_time) / (step + 1)
+            print("Epoch: {}/{}, step: {}/{}, {:.2f}s/step, loss: {:.5f}, "
                   "cls loss: {:.5f}, reg loss: {:.5f}".format(epoch,
                                                               EPOCHS,
                                                               step,
                                                               tf.math.ceil(train_count / BATCH_SIZE),
-                                                              spent_time,
+                                                              time_per_step,
                                                               loss_metric.result(),
                                                               cls_loss_metric.result(),
                                                               reg_loss_metric.result()))
