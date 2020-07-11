@@ -6,11 +6,12 @@ from configuration import NUM_CLASSES, ASPECT_RATIOS
 class SSD(tf.keras.Model):
     def __init__(self):
         super(SSD, self).__init__()
-        self.num_classes = NUM_CLASSES + 1
+        self.num_classes = NUM_CLASSES
         self.anchor_ratios = ASPECT_RATIOS
 
         self.backbone = ResNet50()
-        self.conv1 = tf.keras.layers.Conv2D(filters=1024, kernel_size=(1, 1), strides=1, padding="same")
+        self.learnable_factor = self.add_weight(shape=(1, 1, 1, 512), dtype=tf.float32, initializer=tf.keras.initializers.Ones(), trainable=True)
+        # self.conv1 = tf.keras.layers.Conv2D(filters=1024, kernel_size=(1, 1), strides=1, padding="same")
         self.conv2_1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(1, 1), strides=1, padding="same")
         self.conv2_2 = tf.keras.layers.Conv2D(filters=512, kernel_size=(3, 3), strides=2, padding="same")
         self.conv3_1 = tf.keras.layers.Conv2D(filters=128, kernel_size=(1, 1), strides=1, padding="same")
@@ -36,24 +37,25 @@ class SSD(tf.keras.Model):
 
     def call(self, inputs, training=None, mask=None):
         branch_1, x = self.backbone(inputs, training=training)
+        branch_1 = tf.math.l2_normalize(x=branch_1, axis=-1, epsilon=1e-12) * self.learnable_factor
         predict_1 = self.predict_1(branch_1)
 
-        x = self.conv1(x)
+        # x = self.conv1(x)
         branch_2 = x
         predict_2 = self.predict_2(branch_2)
 
-        x = self.conv2_1(x)
-        x = self.conv2_2(x)
+        x = tf.nn.relu(self.conv2_1(x))
+        x = tf.nn.relu(self.conv2_2(x))
         branch_3 = x
         predict_3 = self.predict_3(branch_3)
 
-        x = self.conv3_1(x)
-        x = self.conv3_2(x)
+        x = tf.nn.relu(self.conv3_1(x))
+        x = tf.nn.relu(self.conv3_2(x))
         branch_4 = x
         predict_4 = self.predict_4(branch_4)
 
-        x = self.conv4_1(x)
-        x = self.conv4_2(x)
+        x = tf.nn.relu(self.conv4_1(x))
+        x = tf.nn.relu(self.conv4_2(x))
         branch_5 = x
         predict_5 = self.predict_5(branch_5)
 
@@ -63,6 +65,7 @@ class SSD(tf.keras.Model):
         predict_6 = self.predict_6(branch_6)
 
         # predict_i shape : (batch_size, h, w, k * (c+4)), where c is self.num_classes.
+        # h == w == [38, 19, 10, 5, 3, 1] for predict_i (i: 1~6)
         return [predict_1, predict_2, predict_3, predict_4, predict_5, predict_6]
 
 
@@ -71,5 +74,5 @@ def ssd_prediction(feature_maps, num_classes):
     predicted_features_list = []
     for feature in feature_maps:
         predicted_features_list.append(tf.reshape(tensor=feature, shape=(batch_size, -1, num_classes + 4)))
-    predicted_features = tf.concat(values=predicted_features_list, axis=1)
+    predicted_features = tf.concat(values=predicted_features_list, axis=1)  # shape: (batch_size, 8732, (c+4))
     return predicted_features

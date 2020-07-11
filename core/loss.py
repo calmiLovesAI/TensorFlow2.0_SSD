@@ -4,7 +4,7 @@ from configuration import reg_loss_weight, NUM_CLASSES, alpha, gamma
 from utils.focal_loss import sigmoid_focal_loss
 
 
-class SmoothL1Loss(object):
+class SmoothL1Loss:
     def __init__(self):
         pass
 
@@ -13,15 +13,15 @@ class SmoothL1Loss(object):
         mask_boolean = tf.math.greater_equal(x=absolute_value, y=1.0)
         mask_float32 = tf.cast(x=mask_boolean, dtype=tf.float32)
         smooth_l1_loss = (1.0 - mask_float32) * 0.5 * tf.math.square(absolute_value) + mask_float32 * (absolute_value - 0.5)
-        return tf.math.reduce_sum(smooth_l1_loss)
+        return smooth_l1_loss
 
 
-class SSDLoss(object):
+class SSDLoss:
     def __init__(self):
         self.smooth_l1_loss = SmoothL1Loss()
         self.reg_loss_weight = reg_loss_weight
         self.cls_loss_weight = 1 - reg_loss_weight
-        self.num_classes = NUM_CLASSES + 1
+        self.num_classes = NUM_CLASSES
 
     @staticmethod
     def __cover_background_boxes(true_boxes):
@@ -33,16 +33,18 @@ class SSDLoss(object):
 
     def __call__(self, y_true, y_pred, *args, **kwargs):
         # y_true : tensor, shape: (batch_size, total_num_of_default_boxes, 5)
-        # y_pred : tensor, shape: (batch_size, total_num_of_default_boxes, NUM_CLASSES + 5)
+        # y_pred : tensor, shape: (batch_size, total_num_of_default_boxes, NUM_CLASSES + 4)
         true_class = tf.cast(x=y_true[..., -1], dtype=tf.dtypes.int32)
         pred_class = y_pred[..., :self.num_classes]
-        true_class = tf.one_hot(indices=true_class, depth=self.num_classes, axis=-1)
-        class_loss_value = tf.math.reduce_sum(sigmoid_focal_loss(y_true=true_class, y_pred=pred_class, alpha=alpha, gamma=gamma))
+        true_class_onehot = tf.one_hot(indices=true_class, depth=self.num_classes, axis=-1)
+        class_loss_value = tf.math.reduce_sum(sigmoid_focal_loss(y_true=true_class_onehot, y_pred=pred_class, alpha=alpha, gamma=gamma))
 
         cover_boxes = self.__cover_background_boxes(true_boxes=y_true)
-        true_coord = y_true[..., :4] * cover_boxes
-        pred_coord = y_pred[..., self.num_classes:] * cover_boxes
-        reg_loss_value = self.smooth_l1_loss(y_true=true_coord, y_pred=pred_coord)
+        # true_coord = y_true[..., :4] * cover_boxes
+        # pred_coord = y_pred[..., self.num_classes:] * cover_boxes
+        true_coord = y_true[..., :4]
+        pred_coord = y_pred[..., self.num_classes:]
+        reg_loss_value = tf.math.reduce_sum(self.smooth_l1_loss(y_true=true_coord, y_pred=pred_coord) * cover_boxes)
 
         loss = self.cls_loss_weight * class_loss_value + self.reg_loss_weight * reg_loss_value
         return loss, class_loss_value, reg_loss_value

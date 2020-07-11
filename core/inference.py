@@ -9,7 +9,7 @@ from utils.nms import NMS
 class InferenceProcedure(object):
     def __init__(self, model):
         self.model = model
-        self.num_classes = NUM_CLASSES + 1
+        self.num_classes = NUM_CLASSES
         self.image_size = np.array([IMAGE_HEIGHT, IMAGE_WIDTH], dtype=np.float32)
         self.nms_op = NMS()
 

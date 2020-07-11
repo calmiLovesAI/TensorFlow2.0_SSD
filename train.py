@@ -52,7 +52,7 @@ if __name__ == '__main__':
     def train_step(batch_images, batch_labels):
         with tf.GradientTape() as tape:
             pred = ssd(batch_images, training=True)
-            output = ssd_prediction(feature_maps=pred, num_classes=NUM_CLASSES + 1)
+            output = ssd_prediction(feature_maps=pred, num_classes=NUM_CLASSES)
             gt = MakeGT(batch_labels, pred)
             gt_boxes = gt.generate_gt_boxes()
             loss_value, cls_loss, reg_loss = loss(y_true=gt_boxes, y_pred=output)
