@@ -96,21 +96,15 @@ class MakeGT(object):
     def __label_positive_and_negative_predicted_boxes(self, box_true, box_pred):
         box_true_coord = box_true[..., :4]
         box_true_class = box_true[..., -1]
-        box_pred_assigned = np.zeros_like(box_pred, dtype=np.float32)
         iou_outside = []
         for i in range(box_true_coord.shape[0]):
-            iou_inside = []
-            for j in range(box_pred.shape[0]):
-                iou = IOU(box_1=box_true_coord[i], box_2=box_pred[j]).calculate_iou()
-                iou_inside.append(iou)
+            iou_inside = IOU(box_1=box_true_coord[i], box_2=box_pred).calculate_iou()
             iou_outside.append(iou_inside)
         iou_array = np.array(iou_outside, dtype=np.float32)  # shape: (num_of_true_boxes, total_num_of_default_boxes)
         iou_max = np.max(iou_array, axis=0)
         max_index = np.argmax(iou_array, axis=0)
-        max_index_class = np.zeros_like(max_index, dtype=np.float32)
-        for k in range(max_index.shape[0]):
-            max_index_class[k] = box_true_class[max_index[k]]
-            box_pred_assigned[k] = self.__get_offset(box_true=box_true_coord[max_index[k]], box_pred=box_pred[k])
+        max_index_class = box_true_class[max_index]
+        box_pred_assigned = self.__get_offset(box_true=box_true_coord[max_index], box_pred=box_pred)
         pos_boolean = np.where(iou_max > self.iou_threshold, 1.0, 0.0)  # 1 for positive, 0 for negative
         pos_class_index = max_index_class * pos_boolean
         pos_class_index = pos_class_index.reshape((-1, 1))
@@ -119,13 +113,11 @@ class MakeGT(object):
 
     @staticmethod
     def __get_offset(box_true, box_pred):
-        d_cx, d_cy, d_w, d_h = box_pred
-        g_cx, g_cy, g_w, g_h = box_true
-        g_cx = (g_cx - d_cx) / d_w
-        g_cy = (g_cy - d_cy) / d_h
-        g_w = np.log(g_w / d_w)
-        g_h = np.log(g_h / d_h)
-        return np.stack([g_cx, g_cy, g_w, g_h], axis=0)
+        box_true[:, 0] = (box_true[:, 0] - box_pred[:, 0]) / box_pred[:, 2]
+        box_true[:, 1] = (box_true[:, 1] - box_pred[:, 1]) / box_pred[:, 3]
+        box_true[:, 2] = np.log(box_true[:, 2] / box_pred[:, 2])
+        box_true[:, 3] = np.log(box_true[:, 3] / box_pred[:, 3])
+        return box_true
 
     def generate_gt_boxes(self):
         true_boxes = self.___transform_true_boxes()  # shape: (batch_size, MAX_BOXES_PER_IMAGE, 5)

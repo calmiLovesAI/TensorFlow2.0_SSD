@@ -6,7 +6,7 @@ class NMS(object):
     def __init__(self):
         super(NMS, self).__init__()
         self.max_box_num = MAX_BOX_NUM
-        self.num_class = NUM_CLASSES + 1
+        self.num_class = NUM_CLASSES
 
     def nms(self, boxes, box_scores):
         mask = box_scores >= CONFIDENCE_THRESHOLD
