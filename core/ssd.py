@@ -65,7 +65,6 @@ class SSD(tf.keras.Model):
         self.extras = ExtraLayer()
         self.locs, self.confs = self._make_loc_conf(num_classes=self.num_classes)
 
-
     def _make_loc_conf(self, num_classes):
         loc_layers = list()
         conf_layers = list()
@@ -102,7 +101,6 @@ class SSD(tf.keras.Model):
         conf = tf.reshape(conf, shape=(conf.shape[0], -1, self.num_classes))
 
         return loc, conf
-
 
 # class SSD(tf.keras.Model):
 #     def __init__(self):
