@@ -4,6 +4,7 @@ import numpy as np
 from configuration import CHANNELS, IMAGE_HEIGHT, IMAGE_WIDTH
 
 
+
 def x_y_meshgrid(x_row, y_col):
     x = np.arange(0, x_row)
     y = np.arange(0, y_col)
