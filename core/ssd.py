@@ -28,9 +28,9 @@ class ExtraLayer(tf.keras.layers.Layer):
         self.conv3 = tf.keras.layers.Conv2D(filters=128, kernel_size=1, strides=1, padding="same")
         self.conv4 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=2, padding="same")
         self.conv5 = tf.keras.layers.Conv2D(filters=128, kernel_size=1, strides=1, padding="same")
-        self.conv6 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="same")
+        self.conv6 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="valid")
         self.conv7 = tf.keras.layers.Conv2D(filters=128, kernel_size=1, strides=1, padding="same")
-        self.conv8 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="same")
+        self.conv8 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="valid")
 
     def call(self, inputs, *args, **kwargs):
         x = self.conv1(inputs)

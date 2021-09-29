@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 from utils.IoU import IOU
-from utils.tools import str_to_int, resize_box, preprocess_image
+from utils.tools import resize_box, preprocess_image
 from configuration import MAX_BOXES_PER_IMAGE, IMAGE_WIDTH, IMAGE_HEIGHT, IOU_THRESHOLD
 from core.anchor import DefaultBoxes
 
@@ -16,7 +16,7 @@ class ReadDataset(object):
         line_string = bytes.decode(single_line.numpy(), encoding="utf-8")
         line_list = line_string.strip().split(" ")
         image_file, image_height, image_width = line_list[:3]
-        image_height, image_width = str_to_int(image_height), str_to_int(image_width)
+        image_height, image_width = int(float(image_height)), int(float(image_width))
         boxes = []
         num_of_boxes = (len(line_list) - 3) / 5
         if int(num_of_boxes) == num_of_boxes:
@@ -25,10 +25,10 @@ class ReadDataset(object):
             raise ValueError("num_of_boxes must be 'int'.")
         for index in range(num_of_boxes):
             if index < MAX_BOXES_PER_IMAGE:
-                xmin = str_to_int(line_list[3 + index * 5])
-                ymin = str_to_int(line_list[3 + index * 5 + 1])
-                xmax = str_to_int(line_list[3 + index * 5 + 2])
-                ymax = str_to_int(line_list[3 + index * 5 + 3])
+                xmin = int(float(line_list[3 + index * 5]))
+                ymin = int(float(line_list[3 + index * 5 + 1]))
+                xmax = int(float(line_list[3 + index * 5 + 2]))
+                ymax = int(float(line_list[3 + index * 5 + 3]))
                 class_id = int(line_list[3 + index * 5 + 4])
                 xmin, ymin, xmax, ymax = resize_box(image_height, image_width, xmin, ymin, xmax, ymax)
                 boxes.append([xmin, ymin, xmax, ymax, class_id])

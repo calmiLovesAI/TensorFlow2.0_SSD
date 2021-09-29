@@ -7,3 +7,5 @@ voc.txt
 !/saved_model/README.md
 /test_pictures/*
 !/test_pictures/README.md
+test_network.py
+test_data.py

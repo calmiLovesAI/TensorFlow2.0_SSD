@@ -2,7 +2,7 @@ import tensorflow as tf
 from configuration import TXT_DIR, BATCH_SIZE
 
 
-class TFDataset(object):
+class TFDataset:
     def __init__(self):
         self.txt_dir = TXT_DIR
 

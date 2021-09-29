@@ -2,20 +2,15 @@ import xml.dom.minidom as xdom
 from configuration import PASCAL_VOC_DIR, OBJECT_CLASSES
 import os
 
-from utils.tools import str_to_int
 
-
-class ParsePascalVOC(object):
+class ParsePascalVOC:
     def __init__(self):
         self.all_xml_dir = PASCAL_VOC_DIR + "Annotations"
         self.all_image_dir = PASCAL_VOC_DIR + "JPEGImages"
 
-    def __process_coord(self, x_min, y_min, x_max, y_max):
-        x_min = str_to_int(x_min)
-        y_min = str_to_int(y_min)
-        x_max = str_to_int(x_max)
-        y_max = str_to_int(y_max)
-        return int(x_min), int(y_min), int(x_max), int(y_max)
+    @staticmethod
+    def __process_coord(*args):
+        return [int(float(e)) for e in args]
 
     # parse one xml file
     def __parse_xml(self, xml):
@@ -39,7 +34,7 @@ class ParsePascalVOC(object):
                 ymin = box.getElementsByTagName("ymin")[0].childNodes[0].data
                 xmax = box.getElementsByTagName("xmax")[0].childNodes[0].data
                 ymax = box.getElementsByTagName("ymax")[0].childNodes[0].data
-                xmin, ymin, xmax, ymax = self.__process_coord(xmin, ymin, xmax, ymax)
+                xmin, ymin, xmax, ymax = ParsePascalVOC.__process_coord(xmin, ymin, xmax, ymax)
                 o_list.append(xmin)
                 o_list.append(ymin)
                 o_list.append(xmax)

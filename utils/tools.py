@@ -24,8 +24,8 @@ def preprocess_image(img_path):
     return img_tensor
 
 
-def str_to_int(x):
-    return int(float(x))
+# def str_to_int(x):
+#     return int(float(x))
 
 
 # If you resize the input image, the coordinates of boxes should also be resized.
