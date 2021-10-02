@@ -20,7 +20,6 @@ class DefaultBoxes:
         boxes = []
         for k, f in enumerate(self.feature_maps):
             for i, j in product(range(f[0]), repeat=2):
-                # 返回f[0]和f[1]中的元素组成的笛卡尔积的元组
                 f_k = self.image_size / self.steps[k]
                 # box中心点的坐标
                 center_x = (j + 0.5) / f_k
