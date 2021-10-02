@@ -2,7 +2,7 @@ import tensorflow as tf
 from core.models.resnet import ResNet50
 from core.models.vgg import VGG
 
-from configuration import NUM_CLASSES, ASPECT_RATIOS
+from configuration import NUM_CLASSES, ASPECT_RATIOS, STAGE_BOXES_PER_PIXEL
 
 
 class L2Normalize(tf.keras.layers.Layer):
@@ -60,6 +60,8 @@ class SSD(tf.keras.Model):
     def __init__(self):
         super(SSD, self).__init__()
         self.num_classes = NUM_CLASSES
+        self.stage_boxes_per_pixel = STAGE_BOXES_PER_PIXEL
+
         self.backbone = VGG(use_bn=True)
         self.l2_norm = L2Normalize(epsilon=1e-10)
         self.extras = ExtraLayer()
@@ -68,8 +70,7 @@ class SSD(tf.keras.Model):
     def _make_loc_conf(self, num_classes):
         loc_layers = list()
         conf_layers = list()
-        params = [4, 6, 6, 6, 4, 4]
-        for i in params:
+        for i in self.stage_boxes_per_pixel:
             loc_layers.append(tf.keras.layers.Conv2D(filters=i * 4, kernel_size=3, strides=1, padding="same"))
             conf_layers.append(
                 tf.keras.layers.Conv2D(filters=i * num_classes, kernel_size=3, strides=1, padding="same"))

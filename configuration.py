@@ -21,12 +21,23 @@ test_images_dir_list = ["", ""]
 IOU_THRESHOLD = 0.6
 
 # generate anchor
-ASPECT_RATIOS = [[1.0, 2.0, 0.5],
-                 [1.0, 2.0, 0.5, 3.0, 1.0 / 3.0],
-                 [1.0, 2.0, 0.5, 3.0, 1.0 / 3.0],
-                 [1.0, 2.0, 0.5, 3.0, 1.0 / 3.0],
-                 [1.0, 2.0, 0.5],
-                 [1.0, 2.0, 0.5]]
+ASPECT_RATIOS = [[2.0, 0.5],
+                 [2.0, 0.5, 3.0, 1.0 / 3.0],
+                 [2.0, 0.5, 3.0, 1.0 / 3.0],
+                 [2.0, 0.5, 3.0, 1.0 / 3.0],
+                 [2.0, 0.5],
+                 [2.0, 0.5]]
+
+# SSD中每个stage分支输出的feature map中每个像素位置处的先验框数量
+STAGE_BOXES_PER_PIXEL = [len(x) + 2 for x in ASPECT_RATIOS]
+
+DOWNSAMPLING_RATIOS = [8, 16, 32, 64, 100, 300]
+
+# SSD网络结构的所有输出feature map的大小（H * W）
+FEATURE_MAPS = [(38, 38), (19, 19), (10, 10), (5, 5), (3, 3), (1, 1)]
+
+# 每个feature map对应的先验框尺寸（相对于原始输入图片分辨率）
+DEFAULT_BOXES_SIZES = [(30, 60), (60, 111), (111, 162), (162, 213), (213, 264), (264, 315)]
 
 # focal loss
 alpha = 0.25

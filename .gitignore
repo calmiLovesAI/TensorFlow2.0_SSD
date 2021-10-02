@@ -9,3 +9,4 @@ voc.txt
 !/test_pictures/README.md
 test_network.py
 test_data.py
+test_anchor.py
