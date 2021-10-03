@@ -2,8 +2,8 @@ import tensorflow as tf
 import numpy as np
 
 from utils.IoU import IOU
-from utils.tools import resize_box, preprocess_image
-from configuration import MAX_BOXES_PER_IMAGE, IMAGE_WIDTH, IMAGE_HEIGHT, IOU_THRESHOLD
+from utils.tools import resize_box, image_box_transform
+from configuration import MAX_BOXES_PER_IMAGE, IMAGE_WIDTH, IMAGE_HEIGHT, IOU_THRESHOLD, FEATURE_MAPS
 from core.anchor import DefaultBoxes
 
 
@@ -22,7 +22,7 @@ class ReadDataset(object):
         if int(num_of_boxes) == num_of_boxes:
             num_of_boxes = int(num_of_boxes)
         else:
-            raise ValueError("num_of_boxes must be 'int'.")
+            raise ValueError(".txt文件中某一行的格式出错")
         for index in range(num_of_boxes):
             if index < MAX_BOXES_PER_IMAGE:
                 xmin = int(float(line_list[3 + index * 5]))
@@ -40,31 +40,28 @@ class ReadDataset(object):
         return image_file, boxes_array
 
     def read(self, batch_data):
-        image_file_list = []
+        images_list = []
         boxes_list = []
         for item in range(batch_data.shape[0]):
             image_file, boxes = self.__get_image_information(single_line=batch_data[item])
-            image_file_list.append(image_file)
+            image, boxes = image_box_transform(image_file, boxes)
+            images_list.append(image)
             boxes_list.append(boxes)
         boxes = np.stack(boxes_list, axis=0)   # shape : (batch_size, MAX_BOXES_PER_IMAGE, 5)
-        image_list = []
-        for item in image_file_list:
-            image_tensor = preprocess_image(img_path=item)
-            image_list.append(image_tensor)
-        images = tf.stack(values=image_list, axis=0)
+
+        images = tf.stack(values=images_list, axis=0)  # shape: (batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS)
         return images, boxes
 
 
 class MakeGT(object):
-    def __init__(self, batch_label, feature_maps):
+    def __init__(self, batch_label):
         self.batch_size = batch_label.shape[0]
-        self.num_predict_features = 6
+        self.num_predict_features = len(FEATURE_MAPS)
         self.read_dataset = ReadDataset()
         self.iou_threshold = IOU_THRESHOLD
-        self.default_boxes = DefaultBoxes(feature_maps)
 
         self.boxes = batch_label
-        self.predict_boxes = self.default_boxes.generate_default_boxes()
+        self.predict_boxes = DefaultBoxes().generate_boxes()
 
     def ___transform_true_boxes(self):
         boxes_xywhc = self.__to_xywhc(self.boxes)

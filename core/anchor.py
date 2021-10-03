@@ -16,7 +16,7 @@ class DefaultBoxes:
         self.aspect_ratios = ASPECT_RATIOS
         self.steps = DOWNSAMPLING_RATIOS
 
-    def __call__(self, *args, **kwargs):
+    def generate_boxes(self):
         boxes = []
         for k, f in enumerate(self.feature_maps):
             for i, j in product(range(f[0]), repeat=2):

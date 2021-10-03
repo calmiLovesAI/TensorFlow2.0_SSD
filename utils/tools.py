@@ -5,13 +5,13 @@ from configuration import CHANNELS, IMAGE_HEIGHT, IMAGE_WIDTH
 
 
 
-def x_y_meshgrid(x_row, y_col):
-    x = np.arange(0, x_row)
-    y = np.arange(0, y_col)
-    X, Y = np.meshgrid(x, y)
-    X = X.flatten()
-    Y = Y.flatten()
-    return X, Y
+# def x_y_meshgrid(x_row, y_col):
+#     x = np.arange(0, x_row)
+#     y = np.arange(0, y_col)
+#     X, Y = np.meshgrid(x, y)
+#     X = X.flatten()
+#     Y = Y.flatten()
+#     return X, Y
 
 
 def preprocess_image(img_path):
@@ -23,6 +23,23 @@ def preprocess_image(img_path):
     img_tensor = tf.image.resize(img_tensor, [IMAGE_HEIGHT, IMAGE_WIDTH])
     return img_tensor
 
+
+def image_box_transform(image, boxes):
+    """
+
+    :param image: str, 图片路径
+    :param boxes: numpy.ndarray, shape: (MAX_BOXES_PER_IMAGE, 5)
+    :return:
+    """
+    image_tensor = preprocess_image(image)
+    h, w, _ = image_tensor.shape
+    x_ratio = IMAGE_WIDTH / w
+    y_ratio = IMAGE_HEIGHT / h
+    boxes[:, 0] *= x_ratio
+    boxes[:, 1] *= y_ratio
+    boxes[:, 2] *= x_ratio
+    boxes[:, 3] *= y_ratio
+    return image_tensor, boxes
 
 # def str_to_int(x):
 #     return int(float(x))
