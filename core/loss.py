@@ -3,17 +3,17 @@ import tensorflow as tf
 from core.anchor import DefaultBoxes
 from utils.IoU import match
 from configuration import VARIANCE
+from utils.tf_functions import log_sum_exp, clip_by_value
 
 
 class MultiBoxLoss(tf.keras.losses.Loss):
-    def __init__(self, num_classes, overlap_thresh):
+    def __init__(self, num_classes, overlap_thresh, neg_pos):
         super(MultiBoxLoss, self).__init__()
-        self.default_boxes = tf.convert_to_tensor(DefaultBoxes().generate_boxes())   # Tensor, shape: (先验框总数(8732), 4)
+        self.default_boxes = tf.convert_to_tensor(DefaultBoxes().generate_boxes())  # Tensor, shape: (先验框总数(8732), 4)
         self.num_classes = num_classes
         self.threshold = overlap_thresh
         self.variance = VARIANCE
-
-        pass
+        self.negpos_ratio = neg_pos
 
     def call(self, y_true, y_pred):
         """
@@ -40,12 +40,41 @@ class MultiBoxLoss(tf.keras.losses.Loss):
         conf_t = tf.stack(values=conf_t, axis=0)
 
         pos = conf_t > 0
-        num_pos = tf.math.reduce_sum(input_tensor=tf.cast(pos, dtype=tf.int32), axis=1, keepdims=True)
+        # num_pos = tf.math.reduce_sum(input_tensor=tf.cast(pos, dtype=tf.int32), axis=1, keepdims=True)
 
         # 位置loss: Smooth L1 loss
-        
+        pos_idx = tf.expand_dims(pos, axis=-1)
+        loc_p = tf.boolean_mask(tensor=loc_data, mask=pos_idx)
+        loc_t = tf.boolean_mask(tensor=loc_t, mask=pos_idx)
+        smooth_l1_loss_fn = tf.keras.losses.Huber(delta=1.0, reduction=tf.keras.losses.Reduction.SUM)
+        loss_l = smooth_l1_loss_fn(y_true=loc_t, y_pred=loc_p)
 
+        batch_conf = tf.reshape(conf_data, shape=(-1, self.num_classes))
+        loss_c = log_sum_exp(batch_conf) - tf.gather(params=batch_conf, indices=tf.reshape(conf_t, shape=(-1, 1)),
+                                                     batch_dims=1)
 
+        # Hard Negative Mining
+        loss_c = tf.where(condition=pos, x=0, y=loss_c)
+        loss_c = tf.reshape(loss_c, shape=(num, -1))
+        loss_idx = tf.argsort(values=loss_c, axis=1, direction="DESCENDING")
+        idx_rank = tf.argsort(values=loss_idx, axis=1, direction="ASCENDING")
+        num_pos = tf.reduce_sum(tf.cast(pos, dtype=tf.int64), axis=1, keepdims=True)
+        num_neg = clip_by_value(t=self.negpos_ratio * num_pos, clip_value_max=pos.shape[1] - 1)
+        neg = idx_rank < num_neg
+
+        # 置信度loss
+        pos_idx = tf.broadcast_to(tf.expand_dims(pos, axis=2), shape=conf_data.shape)
+        neg_idx = tf.broadcast_to(tf.expand_dims(neg, axis=2), shape=conf_data.shape)
+        conf_p = tf.boolean_mask(tensor=conf_data, mask=tf.math.greater(x=pos_idx + neg_idx, y=0))
+        conf_p = tf.reshape(conf_p, shape=(-1, self.num_classes))
+        targets_weighted = tf.boolean_mask(tensor=conf_t, mask=tf.math.greater(x=pos + neg, y=0))
+        ce_fn = tf.keras.losses.CategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM)
+        loss_c = ce_fn(y_true=targets_weighted, y_pred=conf_p)
+
+        N = tf.reduce_sum(num_pos)
+        loss_l /= N
+        loss_c /= N
+        return loss_l, loss_c
 
 # from configuration import reg_loss_weight, NUM_CLASSES, alpha, gamma
 # from utils.focal_loss import sigmoid_focal_loss

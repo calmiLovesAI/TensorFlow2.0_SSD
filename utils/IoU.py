@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from utils.tf_addons import clip_by_value
+from utils.tf_functions import clip_by_value
 
 
 def intersect(box_a, box_b):
