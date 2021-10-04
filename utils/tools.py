@@ -33,12 +33,11 @@ def image_box_transform(image, boxes):
     """
     image_tensor = preprocess_image(image)
     h, w, _ = image_tensor.shape
-    x_ratio = IMAGE_WIDTH / w
-    y_ratio = IMAGE_HEIGHT / h
-    boxes[:, 0] *= x_ratio
-    boxes[:, 1] *= y_ratio
-    boxes[:, 2] *= x_ratio
-    boxes[:, 3] *= y_ratio
+    # boxes坐标归一化到0~1范围内
+    boxes[:, 0] /= w
+    boxes[:, 1] /= h
+    boxes[:, 2] /= w
+    boxes[:, 3] /= h
     return image_tensor, boxes
 
 # def str_to_int(x):
