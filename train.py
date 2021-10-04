@@ -42,6 +42,8 @@ def main():
 
             with tf.GradientTape() as tape:
                 predictions = model(images, training=True)
+                # print(labels)
+                # print(type(predictions))
                 loss_l, loss_c = loss_fn(y_true=labels, y_pred=predictions)
                 total_loss = loss_l + loss_c
             gradients = tape.gradient(total_loss, model.trainable_variables)

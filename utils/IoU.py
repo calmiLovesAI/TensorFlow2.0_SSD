@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import tensorflow as tf
 
 from utils.tf_functions import clip_by_value
@@ -27,8 +28,8 @@ def jaccard(box_a, box_b):
     :param box_b: Tensor, 预测的bounding boxes, shape: (b, 4)
     :return: Tensor, shape: (a, b)
     """
-    box_a = tf.cast(box_a, dtype=tf.float32)
-    box_b = tf.cast(box_b, dtype=tf.float32)
+    # box_a = tf.cast(box_a, dtype=tf.float32)
+    # box_b = tf.cast(box_b, dtype=tf.float32)
     inter = intersect(box_a, box_b)
     area_a = (box_a[:, 2] - box_a[:, 0]) * (box_a[:, 3] - box_a[:, 1])
     area_a = tf.expand_dims(area_a, axis=1)
@@ -51,6 +52,8 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t):
     :param idx:
     :return:
     """
+    priors = tf.cast(priors, dtype=tf.float32)
+    truths = tf.cast(truths, dtype=tf.float32)
     overlaps = jaccard(truths, point_form(priors))
 
     best_prior_overlap = tf.math.reduce_max(overlaps, axis=1, keepdims=True)
@@ -67,7 +70,10 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t):
                                                  indices=tf.expand_dims(best_prior_idx, axis=1),
                                                  updates=best_prior_idx)
 
-    matches = tf.gather(params=truths, indices=best_truth_idx)
+    # best_truth_idx = keep_index_within_bounds(best_truth_idx, lower=0, upper=truths.shape[0]-1)
+    best_truth_idx = clip_by_value(t=best_truth_idx, clip_value_min=0, clip_value_max=truths.shape[0] - 1)
+
+    matches = tf.gather(params=truths, indices=best_truth_idx)  # (20, 4), (8732, )
     conf = tf.gather(params=labels, indices=best_truth_idx) + 1
     conf = tf.where(condition=best_truth_overlap < threshold, x=0, y=conf)
     conf = tf.squeeze(conf)
@@ -77,12 +83,11 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t):
 
 
 def encode(matched, priors, variances):
-    g_cxcy = (matched[:, :2] + matched[:, 2:])/2 - priors[:, :2]
+    g_cxcy = (matched[:, :2] + matched[:, 2:]) / 2 - priors[:, :2]
     g_cxcy /= (variances[0] * priors[:, 2:])
     g_wh = (matched[:, 2:] - matched[:, :2]) / priors[:, 2:]
     g_wh = tf.math.log(g_wh) / variances[1]
     return tf.concat(values=[g_cxcy, g_wh], axis=1)
-
 
 
 def point_form(boxes):
@@ -105,7 +110,6 @@ def center_size(boxes):
     return tf.concat(values=[
         (boxes[:, 2:] + boxes[:, :2]) / 2, boxes[:, 2:] - boxes[:, :2]
     ], axis=1)
-
 
 # # The last dimensions of box_1 and box_2 are both 4. (x, y, w, h)
 # class IOU(object):
@@ -135,6 +139,3 @@ def center_size(boxes):
 #         union_area = self.box_1_area + self.box_2_area - intersect_area
 #         iou = intersect_area / union_area
 #         return iou
-
-
-

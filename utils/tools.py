@@ -4,7 +4,6 @@ import numpy as np
 from configuration import CHANNELS, IMAGE_HEIGHT, IMAGE_WIDTH
 
 
-
 # def x_y_meshgrid(x_row, y_col):
 #     x = np.arange(0, x_row)
 #     y = np.arange(0, y_col)
@@ -12,6 +11,21 @@ from configuration import CHANNELS, IMAGE_HEIGHT, IMAGE_WIDTH
 #     X = X.flatten()
 #     Y = Y.flatten()
 #     return X, Y
+
+
+def true_coords_labels(idx, y_true):
+    """
+    去除标签中的padding部分，只保留真实部分
+    :param idx:
+    :param y_true:
+    :return:
+    """
+    y_true = y_true[idx]
+    mask = y_true[:, -1] >= 0
+    y_true = tf.boolean_mask(y_true, mask)
+    true_coords = y_true[:, :-1]
+    true_labels = y_true[:, -1]
+    return true_coords, true_labels
 
 
 def preprocess_image(img_path):
@@ -39,6 +53,7 @@ def image_box_transform(image, boxes):
     boxes[:, 2] /= w
     boxes[:, 3] /= h
     return image_tensor, boxes
+
 
 # def str_to_int(x):
 #     return int(float(x))
