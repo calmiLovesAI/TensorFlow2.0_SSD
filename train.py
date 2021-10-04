@@ -13,11 +13,18 @@ from core.ssd import SSD
 # from utils.visualize import visualize_training_results
 
 
+def print_model_summary(network):
+    sample_inputs = tf.random.normal(shape=(1, IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS))
+    _ = network(sample_inputs, training=True)
+    network.summary()
+
+
 def main():
     dataset = TFDataset()
     train_data, train_count = dataset.generate_datatset()
 
     model = SSD()
+    print_model_summary(model)
 
     if load_weights_from_epoch >= 0:
         model.load_weights(filepath=save_model_dir + "epoch-{}".format(load_weights_from_epoch))
@@ -42,8 +49,6 @@ def main():
 
             with tf.GradientTape() as tape:
                 predictions = model(images, training=True)
-                # print(labels)
-                # print(type(predictions))
                 loss_l, loss_c = loss_fn(y_true=labels, y_pred=predictions)
                 total_loss = loss_l + loss_c
             gradients = tape.gradient(total_loss, model.trainable_variables)
@@ -53,15 +58,15 @@ def main():
             reg_loss_metric.update_state(values=loss_l)
 
             time_per_step = (time.time() - start_time) / (step + 1)
-            print("Epoch: {}/{}, step: {}/{}, {:.2f}s/step, loss: {:.5f}, "
-                  "cls loss: {:.5f}, reg loss: {:.5f}".format(epoch,
-                                                              EPOCHS,
-                                                              step,
-                                                              tf.math.ceil(train_count / BATCH_SIZE),
-                                                              time_per_step,
-                                                              loss_metric.result(),
-                                                              cls_loss_metric.result(),
-                                                              reg_loss_metric.result()))
+            print("Epoch: {}/{}, step: {}/{}, {:.2f}s/step, loss: {:.10f}, "
+                  "cls loss: {:.10f}, reg loss: {:.10f}".format(epoch,
+                                                                EPOCHS,
+                                                                step,
+                                                                tf.math.ceil(train_count / BATCH_SIZE),
+                                                                time_per_step,
+                                                                loss_metric.result(),
+                                                                cls_loss_metric.result(),
+                                                                reg_loss_metric.result()))
         loss_metric.reset_states()
         cls_loss_metric.reset_states()
         reg_loss_metric.reset_states()

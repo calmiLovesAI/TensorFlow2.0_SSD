@@ -79,7 +79,6 @@ class MultiBoxLoss():
         N = tf.cast(N, dtype=tf.float32)
         loss_l /= N
         loss_c /= N
-        print(loss_l.shape)
         return loss_l, loss_c
 
 # from configuration import reg_loss_weight, NUM_CLASSES, alpha, gamma
