@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 from configuration import NUM_CLASSES, IMAGE_HEIGHT, IMAGE_WIDTH
 from core.anchor import DefaultBoxes
-from core.ssd import ssd_prediction
 from utils.nms import NMS
 
 

@@ -27,6 +27,8 @@ def jaccard(box_a, box_b):
     :param box_b: Tensor, 预测的bounding boxes, shape: (b, 4)
     :return: Tensor, shape: (a, b)
     """
+    box_a = tf.cast(box_a, dtype=tf.float32)
+    box_b = tf.cast(box_b, dtype=tf.float32)
     inter = intersect(box_a, box_b)
     area_a = (box_a[:, 2] - box_a[:, 0]) * (box_a[:, 3] - box_a[:, 1])
     area_a = tf.expand_dims(area_a, axis=1)

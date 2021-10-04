@@ -6,8 +6,7 @@ IMAGE_HEIGHT = 300
 IMAGE_WIDTH = 300
 CHANNELS = 3
 
-load_weights_before_training = False
-load_weights_from_epoch = 0
+load_weights_from_epoch = -1
 save_frequency = 5
 
 test_picture_dir = ""

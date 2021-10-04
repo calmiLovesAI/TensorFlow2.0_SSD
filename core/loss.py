@@ -68,7 +68,7 @@ class MultiBoxLoss(tf.keras.losses.Loss):
         conf_p = tf.boolean_mask(tensor=conf_data, mask=tf.math.greater(x=pos_idx + neg_idx, y=0))
         conf_p = tf.reshape(conf_p, shape=(-1, self.num_classes))
         targets_weighted = tf.boolean_mask(tensor=conf_t, mask=tf.math.greater(x=pos + neg, y=0))
-        ce_fn = tf.keras.losses.CategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM)
+        ce_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True, reduction=tf.keras.losses.Reduction.SUM)
         loss_c = ce_fn(y_true=targets_weighted, y_pred=conf_p)
 
         N = tf.reduce_sum(num_pos)

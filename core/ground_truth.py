@@ -1,8 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-from utils.IoU import IOU
-from utils.tools import resize_box, image_box_transform
+from utils.tools import image_box_transform
 from configuration import MAX_BOXES_PER_IMAGE, IMAGE_WIDTH, IMAGE_HEIGHT, IOU_THRESHOLD, FEATURE_MAPS
 from core.anchor import DefaultBoxes
 
