@@ -1,4 +1,4 @@
-import os.path
+import os
 
 import cv2
 from test import test_single_picture
