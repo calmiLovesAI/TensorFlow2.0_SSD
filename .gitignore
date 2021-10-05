@@ -10,3 +10,4 @@ voc.txt
 test_network.py
 test_data.py
 test_anchor.py
+test_inference.py

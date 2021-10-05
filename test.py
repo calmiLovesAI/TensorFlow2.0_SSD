@@ -8,7 +8,7 @@ from utils.tools import preprocess_image
 
 
 def find_class_name(class_id):
-    for k, v in OBJECT_CLASSES .items():
+    for k, v in OBJECT_CLASSES.items():
         if v == class_id:
             return k
 
