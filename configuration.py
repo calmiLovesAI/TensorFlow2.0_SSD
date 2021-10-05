@@ -75,5 +75,5 @@ MAX_BOXES_NUM = 200
 
 
 # directory of saving model
-save_model_dir = "saved_model/"
+save_model_dir = "./saved_model/"
 

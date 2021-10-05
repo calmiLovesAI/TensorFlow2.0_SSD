@@ -11,7 +11,8 @@ class L2Normalize(tf.keras.layers.Layer):
         self.epsilon = epsilon
 
     def build(self, input_shape):
-        self.w = self.add_weight(shape=(1, 1, 1, input_shape[-1]),
+        self.w = self.add_weight(name="w",
+                                 shape=(1, 1, 1, input_shape[-1]),
                                  initializer=tf.keras.initializers.RandomNormal(),
                                  dtype=tf.float32,
                                  trainable=True)
