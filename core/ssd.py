@@ -1,8 +1,8 @@
 import tensorflow as tf
-from core.models.resnet import ResNet50
+
 from core.models.vgg import VGG
 
-from configuration import NUM_CLASSES, ASPECT_RATIOS, STAGE_BOXES_PER_PIXEL
+from configuration import NUM_CLASSES, STAGE_BOXES_PER_PIXEL
 
 
 class L2Normalize(tf.keras.layers.Layer):
@@ -102,4 +102,3 @@ class SSD(tf.keras.Model):
         conf = tf.reshape(conf, shape=(conf.shape[0], -1, self.num_classes))
 
         return loc, conf
-
