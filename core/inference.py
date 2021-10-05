@@ -57,12 +57,18 @@ class InferenceProcedure:
                                                                 scores=scores,
                                                                 max_output_size=self.top_k,
                                                                 iou_threshold=self.nms_thresh)
-                selected_boxes = tf.gather(params=boxes, indices=selected_indices)  # (self.top_k, 4)
-                selected_scores = tf.gather(params=scores, indices=selected_indices)  # (self.top_k,)
+                selected_boxes = tf.gather(params=boxes, indices=selected_indices)
+                num_boxes = selected_boxes.shape[0]
+                selected_boxes = tf.pad(tensor=selected_boxes, paddings=[[0, self.top_k-num_boxes], [0, 0]])    # (self.top_k, 4)
+
+                selected_scores = tf.expand_dims(tf.gather(params=scores, indices=selected_indices), axis=1)
+                selected_scores = tf.pad(tensor=selected_scores, paddings=[[0, self.top_k-num_boxes], [0, 0]])  # (self.top_k, 1)
+
                 selected_classes = tf.fill(dims=[self.top_k, 1], value=cl)
                 selected_classes = tf.cast(selected_classes, dtype=tf.float32)
+
                 # (self.top_k, 6(conf, xmin, ymin, xmax, ymax, class_idx))
-                targets = tf.concat(values=[tf.expand_dims(selected_scores, axis=1), selected_boxes, selected_classes],
+                targets = tf.concat(values=[selected_scores, selected_boxes, selected_classes],
                                     axis=1)
                 t1.append(targets)
             t1 = tf.stack(values=t1, axis=0)
