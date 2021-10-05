@@ -75,7 +75,7 @@ def main():
             model.save_weights(filepath=save_model_dir + "epoch-{}".format(epoch), save_format="tf")
 
         if test_images_during_training:
-            visualize_training_results(pictures=test_images_dir_list, model=ssd, epoch=epoch)
+            visualize_training_results(pictures=test_images_dir_list, model=model, epoch=epoch)
 
     model.save_weights(filepath=save_model_dir + "saved_model", save_format="tf")
 
