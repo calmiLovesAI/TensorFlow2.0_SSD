@@ -17,7 +17,7 @@ test_images_dir_list = ["", ""]
 
 # When the iou value of the anchor and the real box is less than the IoU_threshold,
 # the anchor is divided into negative classes, otherwise positive.
-IOU_THRESHOLD = 0.6
+# IOU_THRESHOLD = 0.6
 
 # generate anchor
 ASPECT_RATIOS = [[2.0, 0.5],
