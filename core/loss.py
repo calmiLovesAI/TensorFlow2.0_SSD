@@ -32,8 +32,6 @@ class MultiBoxLoss():
         loc_t = []
         conf_t = []
         for idx in range(num):
-            # truths = y_true[idx][:, :-1]
-            # labels = y_true[idx][:, -1]
             truths, labels = true_coords_labels(idx, y_true)
             match(threshold=self.threshold, truths=truths, priors=priors,
                   variances=self.variance, labels=labels, loc_t=loc_t, conf_t=conf_t)
