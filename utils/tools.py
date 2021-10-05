@@ -55,15 +55,15 @@ def image_box_transform(image, boxes):
     return image_tensor, boxes
 
 
-# def str_to_int(x):
-#     return int(float(x))
+def resize_box(boxes, h, w):
+    """
 
-
-# If you resize the input image, the coordinates of boxes should also be resized.
-def resize_box(h, w, xmin, ymin, xmax, ymax):
-    resize_ratio = [IMAGE_HEIGHT / h, IMAGE_WIDTH / w]
-    xmin = int(resize_ratio[1] * xmin)
-    xmax = int(resize_ratio[1] * xmax)
-    ymin = int(resize_ratio[0] * ymin)
-    ymax = int(resize_ratio[0] * ymax)
-    return xmin, ymin, xmax, ymax
+    :param boxes: Numpy.ndarray, (N, 4)
+    :return:
+    """
+    xmin = boxes[:, 0] * h
+    xmax = boxes[:, 1] * w
+    ymin = boxes[:, 2] * h
+    ymax = boxes[:, 3] * w
+    boxes = np.stack([xmin, ymin, xmax, ymax], axis=1).astype(dtype=np.int32)
+    return boxes

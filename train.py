@@ -10,7 +10,7 @@ from core.make_dataset import TFDataset
 from core.ssd import SSD
 
 
-# from utils.visualize import visualize_training_results
+from utils.visualize import visualize_training_results
 
 
 def print_model_summary(network):
@@ -74,8 +74,8 @@ def main():
         if epoch % save_frequency == 0:
             model.save_weights(filepath=save_model_dir + "epoch-{}".format(epoch), save_format="tf")
 
-        # if test_images_during_training:
-        #     visualize_training_results(pictures=test_images_dir_list, model=ssd, epoch=epoch)
+        if test_images_during_training:
+            visualize_training_results(pictures=test_images_dir_list, model=ssd, epoch=epoch)
 
     model.save_weights(filepath=save_model_dir + "saved_model", save_format="tf")
 

@@ -1,7 +1,7 @@
 # training parameters
 EPOCHS = 50
 BATCH_SIZE = 8
-# NUM_CLASSES = 20
+
 IMAGE_HEIGHT = 300
 IMAGE_WIDTH = 300
 CHANNELS = 3
@@ -71,7 +71,7 @@ VARIANCE = [0.1, 0.2]
 # nms
 NMS_THRESHOLD = 0.45
 CONFIDENCE_THRESHOLD = 0.01
-MAX_BOXES_NUM = 50
+MAX_BOXES_NUM = 200
 
 
 # directory of saving model

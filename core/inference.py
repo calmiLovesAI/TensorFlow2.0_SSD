@@ -14,7 +14,8 @@ class InferenceProcedure:
         self.conf_thresh = CONFIDENCE_THRESHOLD
         self.nms_thresh = NMS_THRESHOLD
 
-    def _decode(self, loc, priors, variances):
+    @staticmethod
+    def _decode(loc, priors, variances):
         boxes = tf.concat(values=[
             priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
             priors[:, 2:] * tf.math.exp(loc[:, 2:] * variances[1])
@@ -36,11 +37,11 @@ class InferenceProcedure:
         # 解码
         output = list()
         for i in range(batch_size):
-            decoded_boxes = self._decode(loc_data[i], self.priors, self.variance)  # (num_priors, 4)  (xmin, ymin, xmax, ymax)格式
+            decoded_boxes = InferenceProcedure._decode(loc_data[i], self.priors, self.variance)  # (num_priors, 4)  (xmin, ymin, xmax, ymax)格式
             conf_scores = conf_preds[i]   # (num_classes, num_priors)
 
             t1 = list()
-            t1.append(tf.zeros(shape=(self.top_k, 5)))
+            t1.append(tf.zeros(shape=(self.top_k, 6)))
             for cl in range(1, self.num_classes):
                 # shape: (num_priors,)  dtype: bool
                 c_mask = tf.math.greater(conf_scores[cl], self.conf_thresh)
@@ -57,21 +58,23 @@ class InferenceProcedure:
                                                                 iou_threshold=self.nms_thresh)
                 selected_boxes = tf.gather(params=boxes, indices=selected_indices)  # (self.top_k, 4)
                 selected_scores = tf.gather(params=scores, indices=selected_indices)  # (self.top_k,)
-                # (self.top_k, 5(conf, xmin, ymin, xmax, ymax))
-                targets = tf.concat(values=[tf.expand_dims(selected_scores, axis=1), selected_boxes], axis=1)
+                selected_classes = tf.fill(dims=[self.top_k, 1], value=cl)
+                selected_classes = tf.cast(selected_classes, dtype=tf.float32)
+                # (self.top_k, 6(conf, xmin, ymin, xmax, ymax, class_idx))
+                targets = tf.concat(values=[tf.expand_dims(selected_scores, axis=1), selected_boxes, selected_classes], axis=1)
                 t1.append(targets)
             t1 = tf.stack(values=t1, axis=0)
             output.append(t1)
-        # (batch_size, self.num_classes, self.top_k, 5) <dtype: 'float32'>
+        # (batch_size, self.num_classes, self.top_k, 6) <dtype: 'float32'>
         output = tf.stack(values=output, axis=0)
-        flt = tf.reshape(output, shape=(batch_size, -1, 5))  # (batch_size, self.num_classes * self.top_k, 5)
-        idx = tf.argsort(values=flt[:, :, 0], axis=1, direction="DESCENDING") # (batch_size, self.num_classes * self.top_k,)
-        rank = tf.argsort(values=idx, axis=1, direction="ASCENDING")  # (batch_size, self.num_classes * self.top_k,)
-        mask = rank < self.top_k
-        mask = tf.expand_dims(mask, axis=-1)
-        mask = tf.broadcast_to(mask, shape=flt.shape)
-        flt = tf.where(condition=mask, x=0, y=flt)
-        return flt
+        # flt = tf.reshape(output, shape=(batch_size, -1, 5))  # (batch_size, self.num_classes * self.top_k, 5)
+        # idx = tf.argsort(values=flt[:, :, 0], axis=1, direction="DESCENDING") # (batch_size, self.num_classes * self.top_k,)
+        # rank = tf.argsort(values=idx, axis=1, direction="ASCENDING")  # (batch_size, self.num_classes * self.top_k,)
+        # mask = rank < self.top_k
+        # mask = tf.expand_dims(mask, axis=-1)
+        # mask = tf.broadcast_to(mask, shape=flt.shape)
+        # flt = tf.where(condition=mask, x=0, y=flt)
+        return output
 
 
 
