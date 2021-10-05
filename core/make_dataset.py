@@ -16,5 +16,5 @@ class TFDataset:
     def generate_datatset(self):
         dataset = tf.data.TextLineDataset(filenames=self.txt_dir)
         length_of_dataset = self.get_length_of_dataset(dataset)
-        train_dataset = dataset.batch(batch_size=BATCH_SIZE).shuffle(buffer_size=1000)
+        train_dataset = dataset.shuffle(buffer_size=1000).batch(batch_size=BATCH_SIZE)
         return train_dataset, length_of_dataset
