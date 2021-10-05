@@ -3,10 +3,8 @@ A tensorflow_2.0 implementation of SSD (Single Shot MultiBox Detector) .
 
 
 ## Requirements:
-+ Python >= 3.6
-+ TensorFlow == 2.1.0
-+ numpy == 1.17.0
-+ opencv-python == 4.1.0.25
++ Python >= 3.8
++ TensorFlow >= 2.5.0
 
 ## Usage
 ### Train on PASCAL VOC 2012
