@@ -77,7 +77,7 @@ def main():
         if test_images_during_training:
             visualize_training_results(pictures=test_images_dir_list, model=model, epoch=epoch)
 
-    model.save_weights(filepath=save_model_dir + "saved_model", save_format="tf")
+    model.save_weights(filepath=save_model_dir + "epoch-{}".format(EPOCHS), save_format="tf")
 
 
 if __name__ == '__main__':
