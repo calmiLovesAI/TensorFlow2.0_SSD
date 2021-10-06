@@ -52,9 +52,9 @@ def resize_box(boxes, h, w):
     :param boxes: Numpy.ndarray, (N, 4)
     :return:
     """
-    xmin = boxes[:, 0] * h
-    xmax = boxes[:, 1] * w
-    ymin = boxes[:, 2] * h
-    ymax = boxes[:, 3] * w
+    xmin = boxes[:, 0] * w
+    xmax = boxes[:, 1] * h
+    ymin = boxes[:, 2] * w
+    ymax = boxes[:, 3] * h
     boxes = np.stack([xmin, ymin, xmax, ymax], axis=1).astype(dtype=np.int32)
     return boxes
