@@ -35,7 +35,7 @@ def test_single_picture(picture_dir, model):
     results = procedure(image_tensor)
     results = tf.squeeze(results, axis=0)
     # 筛选置信度高于某一值的框
-    filter_mask = results[:, :, 0] > 0.1
+    filter_mask = results[:, :, 0] > 0.6
     filter_mask = tf.expand_dims(filter_mask, axis=-1)
     filter_mask = tf.broadcast_to(filter_mask, shape=results.shape)
     results = tf.boolean_mask(results, filter_mask)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             print(e)
 
     ssd_model = SSD()
-    ssd_model.load_weights(filepath=save_model_dir + "saved_model")
+    ssd_model.load_weights(filepath=save_model_dir + "epoch-65")
 
     image = test_single_picture(picture_dir=test_picture_dir, model=ssd_model)
 
