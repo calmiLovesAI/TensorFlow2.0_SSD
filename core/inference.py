@@ -24,6 +24,7 @@ class InferenceProcedure:
         max_xy = boxes[:, 2:] + boxes[:, :2]
         return tf.concat(values=[min_xy, max_xy], axis=1)
 
+    # TODO: 怎样选取合适的bounding_boxes
     def __call__(self, inputs, *args, **kwargs):
         # loc_data: (batch_size, num_priors, 4)
         # conf_data: (batch_size, num_priors, num_classes)
@@ -75,12 +76,13 @@ class InferenceProcedure:
             output.append(t1)
         # (batch_size, self.num_classes, self.top_k, 6) <dtype: 'float32'>
         output = tf.stack(values=output, axis=0)
-        # flt = tf.reshape(output, shape=(batch_size, -1, 5))  # (batch_size, self.num_classes * self.top_k, 5)
+        # flt = tf.reshape(output, shape=(batch_size, -1, 6))  # (batch_size, self.num_classes * self.top_k, 6)
         # idx = tf.argsort(values=flt[:, :, 0], axis=1, direction="DESCENDING") # (batch_size, self.num_classes * self.top_k,)
         # rank = tf.argsort(values=idx, axis=1, direction="ASCENDING")  # (batch_size, self.num_classes * self.top_k,)
-        # mask = rank < self.top_k
+        # mask = rank >= self.top_k
         # mask = tf.expand_dims(mask, axis=-1)
         # mask = tf.broadcast_to(mask, shape=flt.shape)
         # flt = tf.where(condition=mask, x=0, y=flt)
+        # return tf.reshape(flt, shape=(batch_size, self.num_classes, -1, 6))
         return output
 
