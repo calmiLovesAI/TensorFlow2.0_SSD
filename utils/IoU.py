@@ -54,10 +54,10 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t):
     truths = tf.cast(truths, dtype=tf.float32)
     overlaps = jaccard(truths, point_form(priors))
 
-    best_prior_overlap = tf.math.reduce_max(overlaps, axis=1, keepdims=True)
-    best_prior_idx = tf.math.argmax(overlaps, axis=1)
-    best_truth_overlap = tf.math.reduce_max(overlaps, axis=0, keepdims=True)
-    best_truth_idx = tf.math.argmax(overlaps, axis=0)
+    best_prior_overlap = tf.math.reduce_max(overlaps, axis=1, keepdims=True)  # (N, 1)
+    best_prior_idx = tf.math.argmax(overlaps, axis=1)  # (N,)
+    best_truth_overlap = tf.math.reduce_max(overlaps, axis=0, keepdims=True)  # (1, 8732)
+    best_truth_idx = tf.math.argmax(overlaps, axis=0)  # (8732,)
 
     best_truth_overlap = tf.tensor_scatter_nd_update(tensor=tf.squeeze(best_truth_overlap),
                                                      indices=tf.expand_dims(best_prior_idx, axis=1),
@@ -66,10 +66,8 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t):
 
     best_truth_idx = tf.tensor_scatter_nd_update(tensor=best_truth_idx,
                                                  indices=tf.expand_dims(best_prior_idx, axis=1),
-                                                 updates=best_prior_idx)
-
-    # best_truth_idx = keep_index_within_bounds(best_truth_idx, lower=0, upper=truths.shape[0]-1)
-    best_truth_idx = clip_by_value(t=best_truth_idx, clip_value_min=0, clip_value_max=truths.shape[0] - 1)
+                                                 updates=tf.range(start=0, limit=best_prior_idx.shape[0], delta=1,
+                                                                  dtype=tf.int64))
 
     matches = tf.gather(params=truths, indices=best_truth_idx)  # (20, 4), (8732, )
     conf = tf.gather(params=labels, indices=best_truth_idx) + 1
@@ -108,4 +106,3 @@ def center_size(boxes):
     return tf.concat(values=[
         (boxes[:, 2:] + boxes[:, :2]) / 2, boxes[:, 2:] - boxes[:, :2]
     ], axis=1)
-
