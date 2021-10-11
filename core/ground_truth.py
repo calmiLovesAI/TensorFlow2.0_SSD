@@ -24,12 +24,11 @@ class ReadDataset(object):
             raise ValueError(".txt文件中某一行的格式出错")
         for index in range(num_of_boxes):
             if index < MAX_BOXES_PER_IMAGE:
-                xmin = int(float(line_list[3 + index * 5]))
-                ymin = int(float(line_list[3 + index * 5 + 1]))
-                xmax = int(float(line_list[3 + index * 5 + 2]))
-                ymax = int(float(line_list[3 + index * 5 + 3]))
+                xmin = float(line_list[3 + index * 5])
+                ymin = float(line_list[3 + index * 5 + 1])
+                xmax = float(line_list[3 + index * 5 + 2])
+                ymax = float(line_list[3 + index * 5 + 3])
                 class_id = int(line_list[3 + index * 5 + 4])
-                # xmin, ymin, xmax, ymax = resize_box(image_height, image_width, xmin, ymin, xmax, ymax)
                 boxes.append([xmin, ymin, xmax, ymax, class_id])
         num_padding_boxes = MAX_BOXES_PER_IMAGE - num_of_boxes
         if num_padding_boxes > 0:

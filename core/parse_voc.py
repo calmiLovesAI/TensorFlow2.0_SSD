@@ -10,7 +10,7 @@ class ParsePascalVOC:
 
     @staticmethod
     def __process_coord(*args):
-        return [int(float(e)) for e in args]
+        return [float(e) for e in args]
 
     # parse one xml file
     def __parse_xml(self, xml):
