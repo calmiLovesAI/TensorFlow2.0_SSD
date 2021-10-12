@@ -12,10 +12,10 @@ def true_coords_labels(idx, y_true):
     :return:
     """
     y_true = y_true[idx]
-    mask = y_true[:, -1] >= 0
-    y_true = tf.boolean_mask(y_true, mask)
-    true_coords = y_true[:, :-1]
-    true_labels = y_true[:, -1]
+    mask = y_true[:, -1] > 0
+    masked_true = tf.boolean_mask(y_true, mask)
+    true_coords = masked_true[:, :-1]
+    true_labels = masked_true[:, -1]
     return true_coords, true_labels
 
 

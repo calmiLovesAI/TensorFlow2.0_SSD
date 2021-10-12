@@ -51,8 +51,9 @@ class MultiBoxLoss:
         smooth_l1_loss_fn = tf.keras.losses.Huber(delta=1.0, reduction=tf.keras.losses.Reduction.SUM)
         loss_l = smooth_l1_loss_fn(y_true=loc_t, y_pred=loc_p)
 
-        batch_conf = tf.reshape(conf_data, shape=(-1, self.num_classes))
-        conf_t = tf.cast(conf_t, dtype=tf.int32)
+        batch_conf = tf.reshape(conf_data, shape=(-1, self.num_classes))   # (69856, 21)
+        conf_t = tf.cast(conf_t, dtype=tf.int32)   # (8, 8732)
+        # print(log_sum_exp(batch_conf).shape)    # (69856, 1)
         loss_c = log_sum_exp(batch_conf) - tf.gather(params=batch_conf, indices=tf.reshape(conf_t, shape=(-1, 1)),
                                                      batch_dims=1)
 
@@ -70,8 +71,8 @@ class MultiBoxLoss:
         pos_idx = tf.broadcast_to(tf.expand_dims(pos, axis=2), shape=conf_data.shape)
         neg_idx = tf.broadcast_to(tf.expand_dims(neg, axis=2), shape=conf_data.shape)
         conf_p = tf.boolean_mask(tensor=conf_data, mask=tf.math.logical_or(pos_idx, neg_idx))
-        conf_p = tf.reshape(conf_p, shape=(-1, self.num_classes))
-        targets_weighted = tf.boolean_mask(tensor=conf_t, mask=tf.math.logical_or(pos, neg))
+        conf_p = tf.reshape(conf_p, shape=(-1, self.num_classes))   # (68380, 21)
+        targets_weighted = tf.boolean_mask(tensor=conf_t, mask=tf.math.logical_or(pos, neg))   # (68380,)
         ce_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction=tf.keras.losses.Reduction.SUM)
         loss_c = ce_fn(y_true=targets_weighted, y_pred=conf_p)
 

@@ -79,7 +79,7 @@ class InferenceProcedure:
         flt = tf.reshape(output, shape=(batch_size, -1, 6))  # (batch_size, self.num_classes * self.top_k, 6)
         idx = tf.argsort(values=flt[:, :, 0], axis=1, direction="DESCENDING")  # (batch_size, self.num_classes * self.top_k,)
         rank = tf.argsort(values=idx, axis=1, direction="ASCENDING")  # (batch_size, self.num_classes * self.top_k,)
-        mask = rank >= self.top_k
+        mask = rank < self.top_k
         mask = tf.expand_dims(mask, axis=-1)
         mask = tf.broadcast_to(mask, shape=flt.shape)
         flt = tf.where(condition=mask, x=0, y=flt)
