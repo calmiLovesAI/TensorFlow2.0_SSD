@@ -53,8 +53,8 @@ def resize_box(boxes, h, w):
     :return:
     """
     xmin = boxes[:, 0] * w
-    xmax = boxes[:, 1] * h
-    ymin = boxes[:, 2] * w
+    ymin = boxes[:, 1] * h
+    xmax = boxes[:, 2] * w
     ymax = boxes[:, 3] * h
     boxes = np.stack([xmin, ymin, xmax, ymax], axis=1).astype(dtype=np.int32)
     return boxes

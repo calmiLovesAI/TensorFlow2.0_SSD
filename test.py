@@ -40,12 +40,14 @@ def test_single_picture(picture_dir, model):
     filter_mask = tf.expand_dims(filter_mask, axis=-1)
     filter_mask = tf.broadcast_to(filter_mask, shape=results.shape)
     results = tf.boolean_mask(results, filter_mask)
+    # print("results: ", results)
     results = tf.reshape(results, shape=(-1, 6))
 
     scores = results[:, 0].numpy()
     boxes = results[:, 1: 5].numpy()
     boxes = resize_box(boxes, h, w)
     classes = tf.cast(results[:, -1] - 1, dtype=tf.int32).numpy()
+    # print("检测结果：boxes: {}, classes: {}, scores: {}".format(boxes, classes, scores))
 
     image_with_boxes = draw_boxes_on_image(image_array, boxes, scores, classes)
 
@@ -67,7 +69,6 @@ if __name__ == '__main__':
     # 始终加载最新的权重文件
     last_epoch = os.listdir(save_model_dir)[-2].split(".")[0]
     ssd_model.load_weights(filepath=save_model_dir + last_epoch)
-
     image = test_single_picture(picture_dir=test_picture_dir, model=ssd_model)
 
     cv2.namedWindow("detect result", flags=cv2.WINDOW_NORMAL)

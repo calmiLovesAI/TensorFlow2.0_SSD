@@ -21,7 +21,7 @@ class InferenceProcedure:
             priors[:, 2:] * tf.math.exp(loc[:, 2:] * variances[1])
         ], axis=1)
         min_xy = boxes[:, :2] - boxes[:, 2:] / 2
-        max_xy = boxes[:, 2:] + boxes[:, :2]
+        max_xy = boxes[:, :2] + boxes[:, 2:] / 2
         return tf.concat(values=[min_xy, max_xy], axis=1)
 
     # TODO: 怎样选取合适的bounding_boxes
@@ -72,17 +72,17 @@ class InferenceProcedure:
                 targets = tf.concat(values=[selected_scores, selected_boxes, selected_classes],
                                     axis=1)
                 t1.append(targets)
-            t1 = tf.stack(values=t1, axis=0)
-            output.append(t1)
-        # (batch_size, self.num_classes, self.top_k, 6) <dtype: 'float32'>
+            t2 = tf.stack(values=t1, axis=0)
+            output.append(t2)
+        # (batch_size, C, self.top_k, 6) <dtype: 'float32'>
         output = tf.stack(values=output, axis=0)
-        # flt = tf.reshape(output, shape=(batch_size, -1, 6))  # (batch_size, self.num_classes * self.top_k, 6)
-        # idx = tf.argsort(values=flt[:, :, 0], axis=1, direction="DESCENDING") # (batch_size, self.num_classes * self.top_k,)
-        # rank = tf.argsort(values=idx, axis=1, direction="ASCENDING")  # (batch_size, self.num_classes * self.top_k,)
-        # mask = rank >= self.top_k
-        # mask = tf.expand_dims(mask, axis=-1)
-        # mask = tf.broadcast_to(mask, shape=flt.shape)
-        # flt = tf.where(condition=mask, x=0, y=flt)
-        # return tf.reshape(flt, shape=(batch_size, self.num_classes, -1, 6))
-        return output
+        flt = tf.reshape(output, shape=(batch_size, -1, 6))  # (batch_size, self.num_classes * self.top_k, 6)
+        idx = tf.argsort(values=flt[:, :, 0], axis=1, direction="DESCENDING")  # (batch_size, self.num_classes * self.top_k,)
+        rank = tf.argsort(values=idx, axis=1, direction="ASCENDING")  # (batch_size, self.num_classes * self.top_k,)
+        mask = rank >= self.top_k
+        mask = tf.expand_dims(mask, axis=-1)
+        mask = tf.broadcast_to(mask, shape=flt.shape)
+        flt = tf.where(condition=mask, x=0, y=flt)
+        return tf.reshape(flt, shape=(batch_size, -1, self.top_k, 6))
+        # return output
 
