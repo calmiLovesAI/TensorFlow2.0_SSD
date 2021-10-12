@@ -58,7 +58,7 @@ def main():
             reg_loss_metric.update_state(values=loss_l)
 
             time_per_step = (time.time() - start_time) / (step + 1)
-            print("Epoch: {}/{}, step: {}/{}, {:.2f}s/step, loss: {:.10f}, "
+            print("Epoch: {}/{}, step: {}/{}, speed: {:.2f}s/step, loss: {:.10f}, "
                   "cls loss: {:.10f}, reg loss: {:.10f}".format(epoch,
                                                                 EPOCHS,
                                                                 step,
