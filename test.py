@@ -46,7 +46,7 @@ def test_single_picture(picture_dir, model):
     scores = results[:, 0].numpy()
     boxes = results[:, 1: 5].numpy()
     boxes = resize_box(boxes, h, w)
-    classes = tf.cast(results[:, -1] - 1, dtype=tf.int32).numpy()
+    classes = tf.cast(results[:, -1], dtype=tf.int32).numpy()
     # print("检测结果：boxes: {}, classes: {}, scores: {}".format(boxes, classes, scores))
 
     image_with_boxes = draw_boxes_on_image(image_array, boxes, scores, classes)

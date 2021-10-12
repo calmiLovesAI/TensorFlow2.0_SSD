@@ -70,7 +70,7 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t):
                                                                   dtype=tf.int64))
 
     matches = tf.gather(params=truths, indices=best_truth_idx)  # (20, 4), (8732, )
-    conf = tf.gather(params=labels, indices=best_truth_idx) + 1
+    conf = tf.gather(params=labels, indices=best_truth_idx)
     conf = tf.where(condition=best_truth_overlap < threshold, x=0, y=conf)
     conf = tf.squeeze(conf)
     loc = encode(matches, priors, variances)

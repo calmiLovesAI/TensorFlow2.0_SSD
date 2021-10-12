@@ -7,7 +7,7 @@ from utils.tf_functions import log_sum_exp, clip_by_value
 from utils.tools import true_coords_labels
 
 
-class MultiBoxLoss():
+class MultiBoxLoss:
     def __init__(self, num_classes, overlap_thresh, neg_pos):
         self.default_boxes = tf.convert_to_tensor(DefaultBoxes().generate_boxes())  # Tensor, shape: (先验框总数(8732), 4)
         self.num_classes = num_classes
