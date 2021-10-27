@@ -1,6 +1,8 @@
 # TensorFlow2.0_SSD
 A tensorflow_2.0 implementation of SSD (Single Shot MultiBox Detector) .
 
+【训练的中间结果明显有问题，但是我找不到bug所在，如果你发现了bug，请开issue或者提PR，谢谢~】
+(The intermediate results of the training are obviously problematic, but I can't find the bug.If you find a bug, please open an issue or raise a PR, thank you~)
 
 ## Requirements:
 + Python >= 3.8
